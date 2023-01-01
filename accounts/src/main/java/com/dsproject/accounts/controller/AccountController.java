@@ -10,22 +10,38 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Optional;
 
+import javax.servlet.http.HttpSession;
+
 @Controller
 public class AccountController {
     @Autowired
     private AccountRepository repository;
 
+    @GetMapping("/")
+    public String homePage() {
+        return "home";
+    }
+
     @GetMapping("/accounts/search")
     public String search(
         @RequestParam("company") String company, 
-        Model model) 
+        Model model, 
+        HttpSession session) 
     {
+        String currentUser = (String)session.getAttribute("username");
+        if(currentUser == null || !repository.findById(currentUser).isPresent()){
+            return "redirect:/accounts/login";
+        }
         model.addAttribute("searchResults", repository.findIdByCompany(company));
         return "searchResults";
     }
 
     @GetMapping("/accounts/signup")
-    public String signup() {
+    public String signup(HttpSession session) {
+        String currentUser = (String)session.getAttribute("username");
+        if(currentUser != null && repository.findById(currentUser).isPresent()){
+            return "success";
+        }
         return "signup";
     }
 
@@ -34,7 +50,8 @@ public class AccountController {
         @RequestParam("email") String email,
         @RequestParam("password") String password,
         @RequestParam("name") String name,
-        @RequestParam("company") String company) 
+        @RequestParam("company") String company, 
+        HttpSession session) 
     {
         if (repository.findById(email).isPresent()) {
             return "AccountExists";
@@ -47,29 +64,37 @@ public class AccountController {
             account.setName(name);
             account.setPassword(password);
             repository.save(account);
-            //ADD TO SESSION
+            session.setAttribute("username", email);
             return "success"; //TO DO: REDIRECT TO DASH
         }
     }
 
     @GetMapping("/accounts/login")
-    public String login() {
-        //IF USER IN SESSION THEN REDIRECT TO DASH
+    public String login(HttpSession session) {
+        String currentUser = (String) session.getAttribute("username");
+        if(currentUser != null && repository.findById(currentUser).isPresent()){
+            return "success";
+        }
         return "login";
     }
 
     @PostMapping("/accounts/authenticate")
     public String authenticate(
         @RequestParam("email") String email,
-        @RequestParam("password") String password) 
+        @RequestParam("password") String password, 
+        HttpSession session) 
     {
+        String currentUser = (String) session.getAttribute("username");
+        if(currentUser != null && repository.findById(currentUser).isPresent()){
+            return "success";
+        }
         if (!repository.findById(email).isPresent()) {
             System.out.println("no email");
             return "AccountDoesNotExist";
         } 
         else {
             if(repository.findPasswordByEmail(email).equals(password)){
-                //ADD TO SESSION
+                session.setAttribute("username", email);
                 return "success"; //TO DO: REDIRECT TO DASH
             }
             else{
@@ -81,24 +106,41 @@ public class AccountController {
     }
 
     @GetMapping("/accounts/updateAccount")
-    public String goUpdateForm(Model model) {
-        //CHECK SESSION AND REDIRECT IF NOT LOGGED IN
+    public String goUpdateForm(Model model, HttpSession session) {
+        String currentUser = (String)session.getAttribute("username");
+        if(currentUser == null || !repository.findById(currentUser).isPresent()){
+            return "redirect:/accounts/login";
+        }
+        System.out.println("Reached!");
         //USE SESSION TO AUTOFILL FIELDS
+        Optional<Account> optional = repository.findById(currentUser);
+        if (optional.isPresent()) {
+            Account account = optional.get();
+            model.addAttribute("oldName", account.getName());
+            model.addAttribute("oldPassword", account.getPassword());
+            model.addAttribute("oldCompany", account.getLastCompanyWorked());
+        }
+        else{
+            return "redirect:/accounts/login";
+        }
         return "update";
     }
 
     @PostMapping("/accounts/update")
     public String update(@RequestParam("password") String password,
                           @RequestParam("name") String name,
-                          @RequestParam("company") String company
-                          ) 
+                          @RequestParam("company") String company,
+                          HttpSession session) 
     {
-        //GET EMAIL FROM SESSION
-        String email = "STUB";  //NEEDS TO BE FROM SESSION
-        Optional<Account> optional = repository.findById(email);
+        String currentUser = (String)session.getAttribute("username");
+        if(currentUser == null || !repository.findById(currentUser).isPresent()){
+            return "redirect:/accounts/login";
+        }
+        Optional<Account> optional = repository.findById(currentUser);
         if (optional.isPresent()) {
             Account account = optional.get();
             account.setName(name);
+            account.setPassword(password);
             account.setLastCompanyWorked(company);
             repository.save(account);
             return "success";
@@ -108,9 +150,19 @@ public class AccountController {
         }
     }
 
-    @GetMapping("/accounts/showaccount")
-    public ModelAndView goToAccount() {
-        String email = "STUB";  //NEEDS TO BE FROM SESSION
+    @RequestMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/accounts/login";
+    }
+
+    @GetMapping("/accounts/account")
+    public ModelAndView goToAccount(HttpSession session) {
+        String currentUser = (String)session.getAttribute("username");
+        if(currentUser == null || !repository.findById(currentUser).isPresent()){
+            return null;
+        }
+        String email = currentUser; 
         Optional<Account> optional = repository.findById(email);
         if (optional.isPresent()) {
             Account account = optional.get();
