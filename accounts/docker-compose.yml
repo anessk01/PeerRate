@@ -1,0 +1,12 @@
+version: '3'
+services:
+  db:
+    container_name: accounts
+    image: mysql
+    ports: 
+      - 3306:3306   
+    environment:
+      MYSQL_DATABASE: accounts
+      MYSQL_ROOT_PASSWORD: wsch8001
+    volumes:
+      - ./dbdata:/var/lib/mysql

@@ -3,87 +3,114 @@ package com.dsproject.accounts.controller;
 import com.dsproject.accounts.entity.Account;
 import com.dsproject.accounts.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
 import java.util.Optional;
-import javax.swing.*;
 
-@RestController
+@Controller
 public class AccountController {
     @Autowired
     private AccountRepository repository;
 
-    @GetMapping("/accounts")
-    public ModelAndView goAccount() {
-        return new ModelAndView("index");
+    @GetMapping("/accounts/search")
+    public String search(
+        @RequestParam("company") String company, 
+        Model model) 
+    {
+        model.addAttribute("searchResults", repository.findIdByCompany(company));
+        return "searchResults";
     }
 
-    @GetMapping("/accounts/getall")
-    public List<Account> getAll() {
-        return repository.findAll();
+    @GetMapping("/accounts/signup")
+    public String signup() {
+        return "signup";
     }
-
-    @PostMapping("/accounts/getbyid")
-    public Optional<Account> getById(@RequestParam("email") String email
-    ) {
-        return repository.findById(email);
-    }
-
 
     @PostMapping("/accounts/create")
-    public Account create(@RequestParam("email") String email,
-                          @RequestParam("name") String name,
-                          @RequestParam("company") String company
-                          ) {
+    public String create(
+        @RequestParam("email") String email,
+        @RequestParam("password") String password,
+        @RequestParam("name") String name,
+        @RequestParam("company") String company) 
+    {
         if (repository.findById(email).isPresent()) {
-
-            return null;} else {
+            return "AccountExists";
+        } 
+        else {
             Account account = new Account();
             account.setEmail(email);
-            account.setCredits(0);
+            account.setCredits(3);
             account.setLastCompanyWorked(company);
             account.setName(name);
-            return repository.save(account);
+            account.setPassword(password);
+            repository.save(account);
+            //ADD TO SESSION
+            return "success"; //TO DO: REDIRECT TO DASH
         }
     }
 
+    @GetMapping("/accounts/login")
+    public String login() {
+        //IF USER IN SESSION THEN REDIRECT TO DASH
+        return "login";
+    }
+
+    @PostMapping("/accounts/authenticate")
+    public String authenticate(
+        @RequestParam("email") String email,
+        @RequestParam("password") String password) 
+    {
+        if (!repository.findById(email).isPresent()) {
+            System.out.println("no email");
+            return "AccountDoesNotExist";
+        } 
+        else {
+            if(repository.findPasswordByEmail(email).equals(password)){
+                //ADD TO SESSION
+                return "success"; //TO DO: REDIRECT TO DASH
+            }
+            else{
+                System.out.println(email);
+                System.out.println(repository.findPasswordByEmail(email));
+                return "AccountDoesNotExist";
+            }
+        }
+    }
+
+    @GetMapping("/accounts/updateAccount")
+    public String goUpdateForm(Model model) {
+        //CHECK SESSION AND REDIRECT IF NOT LOGGED IN
+        //USE SESSION TO AUTOFILL FIELDS
+        return "update";
+    }
+
     @PostMapping("/accounts/update")
-    public Account update(@RequestParam("email") String email,
+    public String update(@RequestParam("password") String password,
                           @RequestParam("name") String name,
-                          @RequestParam("company") String company,
-                          @RequestParam("credits") Integer credits
-                          ) {
+                          @RequestParam("company") String company
+                          ) 
+    {
+        //GET EMAIL FROM SESSION
+        String email = "STUB";  //NEEDS TO BE FROM SESSION
         Optional<Account> optional = repository.findById(email);
         if (optional.isPresent()) {
             Account account = optional.get();
             account.setName(name);
             account.setLastCompanyWorked(company);
-            account.setCredits(credits);
-            return repository.save(account);
-        } else {
-            return null;
+            repository.save(account);
+            return "success";
+        } 
+        else {
+            return "AccountDoesNotExist";
         }
     }
 
-    @GetMapping("/accounts/createform")
-    public ModelAndView goCreateForm() {
-        return new ModelAndView("create");
-    }
-
-    @GetMapping("/accounts/updateform")
-    public ModelAndView goUpdateForm() {
-        return new ModelAndView("update");
-    }
-
-    @GetMapping("/accounts/queryform")
-    public ModelAndView goQueryForm() {
-        return new ModelAndView("query");
-    }
-
-    @PostMapping("/accounts/showaccount")
-    public ModelAndView goToAccount(@RequestParam("email") String email) {
+    @GetMapping("/accounts/showaccount")
+    public ModelAndView goToAccount() {
+        String email = "STUB";  //NEEDS TO BE FROM SESSION
         Optional<Account> optional = repository.findById(email);
         if (optional.isPresent()) {
             Account account = optional.get();

@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Sign Up</title>
 </head>
 <body>
   <form action="http://localhost:8080/accounts/create" method="post">
       <p>Email: <input type="text" name="email"></p>
-      <p>Company: <input type="text" name="company"></p>
+      <p>Password: <input type="password" name="password"></p>
+      <p>Latest Company You Worked for: <input type="text" name="company"></p>
       <p>Name: <input type="text" name="name"></p>
       <p><input type="submit" value="OK"></p>
   </form>

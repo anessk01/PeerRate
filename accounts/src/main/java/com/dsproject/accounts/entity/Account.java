@@ -1,13 +1,13 @@
 package com.dsproject.accounts.entity;
 
-
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+
 @Entity
 public class Account {
     @Id
     private String email;
+    private String password;
     private String name;
     private String lastCompanyWorked;
     private int credits;
@@ -18,6 +18,14 @@ public class Account {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getName() {
