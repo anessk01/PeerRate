@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: accounts
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/accounts
@@ -11,3 +13,12 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+
+eureka:
+  client: 
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:8070/eureka/
+  instance:
+    hostname: localhost
