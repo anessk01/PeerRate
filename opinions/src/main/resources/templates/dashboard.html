@@ -11,13 +11,30 @@
         <p>Search for Peers by their Company:</p>
         <br> <input type="text" name="company" placeholder="Eg: Microsoft"> <input type="submit" value="Search"></p>
     </form>
-    Your Reviews:
+    Your Reviews of Others:
     <tr th:each="data, iterstat: ${opinionsByUser}">
         <form action="/opinions/updateForm", method="get">
             <div th:text="'Your Review of: ' + ${opinionsByUser[iterstat.index].receiverEmail}"></div>
             <input type="text" style="display:none" name="timestamp" th:value="${opinionsByUser[iterstat.index].timestamp}">
             <div th:text="${opinionsByUser[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsByUser[iterstat.index].likes.length()))} + '...'"></div>
             <input type="submit" value="Edit Review"></td>
+        </form><br>
+    </tr>
+    Unread Reviews of You:
+    <tr th:each="data, iterstat: ${opinionsOfUserNotViewed}">
+        <form action="/opinions/get", method="get">
+            <div>Someone Said this About You:</div>
+            <input type="text" style="display:none" name="timestamp" th:value="${opinionsOfUserNotViewed[iterstat.index].timestamp}">
+            <div th:text="${opinionsOfUserNotViewed[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsOfUserNotViewed[iterstat.index].likes.length()))} + '...'"></div>
+            <input type="submit" value="See What They Think of You!"></td>
+        </form><br>
+    </tr>
+    Reviews of You that You Already Saw:
+    <tr th:each="data, iterstat: ${opinionsOfUserViewed}">
+        <form action="/opinions/get", method="get">
+            <input type="text" style="display:none" name="timestamp" th:value="${opinionsOfUserViewed[iterstat.index].timestamp}">
+            <div th:text="${opinionsOfUserViewed[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsOfUserViewed[iterstat.index].likes.length()))} + '...'"></div>
+            <input type="submit" value="Re-read Review"></td>
         </form><br>
     </tr>
 </body>

@@ -7,7 +7,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class OpinionController {
-    private static final String OpinionPK = null;
     String gatewayUrl = "http://localhost:8000";
     String loginUrl = "redirect:" + gatewayUrl + "/accounts/login";
 
@@ -32,6 +30,12 @@ public class OpinionController {
         }
         ArrayList<Opinion> opinionsByUser = repository.findOpinionBySenderEmail(currentUser);
         model.addAttribute("opinionsByUser", opinionsByUser);
+        
+        ArrayList<Opinion> opinionsOfUserViewed = repository.findOpinionByReceiverEmailViewed(currentUser, true);
+        ArrayList<Opinion> opinionsOfUserNotViewed = repository.findOpinionByReceiverEmailViewed(currentUser, false);
+        model.addAttribute("opinionsOfUserViewed", opinionsOfUserViewed);
+        model.addAttribute("opinionsOfUserNotViewed", opinionsOfUserNotViewed);
+        
         //(JMS): await notifications to be fetched from accounts service
         return "dashboard";
     }
