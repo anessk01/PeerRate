@@ -4,6 +4,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.ActiveMQConnectionFactory;
+
+import java.util.Arrays;
+
 import javax.jms.Queue;
 import org.springframework.jms.core.JmsTemplate;
 
@@ -19,6 +22,7 @@ public class Config {
     public ActiveMQConnectionFactory activeMQConnectionFactory(){
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
         factory.setBrokerURL("tcp://localhost:61616");
+        factory.setTrustAllPackages(true);
         return factory;
     }
 

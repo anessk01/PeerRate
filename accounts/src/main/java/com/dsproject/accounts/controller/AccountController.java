@@ -5,7 +5,10 @@ import com.dsproject.core.MessageTypeB;
 import com.dsproject.accounts.entity.Account;
 import com.dsproject.accounts.helpers.NotificationManager;
 import com.dsproject.accounts.repository.AccountRepository;
+
+import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.JmsException;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
@@ -19,11 +22,12 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
 
 @Controller
-public class AccountController {
+public class AccountController{
     String gatewayUrl = "http://localhost:8000";
     String dashUrl = "redirect:" + gatewayUrl + "/opinions/dashboard";
     final String notifNewCredit = "You have a new credit because of your latest review! Check it out!";
@@ -49,13 +53,28 @@ public class AccountController {
         jmsTemplate.convertAndSend(queue, errorMessage);
     }
 
+    public void returnSuccessMessage(){
+        MessageTypeB successMessage = new MessageTypeB(true, true, null, null);
+        jmsTemplate.convertAndSend(queue, successMessage);
+    }
+
     @JmsListener(destination = "queueA")
-    public void consume(Object message){
+    public void consume(Object received) throws JmsException{
+        //should ideally be handled using threads, but JPA is not thread safe.
 		System.out.println("CALLED");
+        ActiveMQObjectMessage receivedConverted = (ActiveMQObjectMessage) received;
+        Object message;
+        try {
+            message = receivedConverted.getObject();
+        } catch (JMSException e) {
+            e.printStackTrace();
+            returnUnsuccesfulMessage();
+            return;
+        }
         if (message instanceof MessageTypeA) {
             MessageTypeA contents = (MessageTypeA) message;
             if(contents.type.equals("increment")){
-                //the user has just tried to add a review.
+                //the user has just tried to add a review. opinions service will await accounts' response to confirm information consistency.
                 //on accounts microservice, we validate recepient email
                 if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
                     //we increment sender user credits
@@ -67,6 +86,7 @@ public class AccountController {
                     senderAccount.setNotifications(NotificationManager.addNotification(notifNewCredit, senderAccount.getNotifications()));
                     //we add a notification to receiver that they have been reviewed
                     receiverAccount.setNotifications(NotificationManager.addNotification(notifNewReview, receiverAccount.getNotifications()));
+                    returnSuccessMessage();
                 }
                 else{
                     System.out.println("failed: fake receiver or sender");
@@ -74,19 +94,19 @@ public class AccountController {
                 }
             }
             else if(contents.type.equals("decrement")){
-                //the user has just attempted to read a review they hadn't read before
+                //the user has just attempted to read a review they hadn't read before. opinions service depends on response to either show opinion or not.
                 //we check that they have enough credits (1 or more)
                 if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
-                    //if so, allowed is true, and we reduce credits by 1. we return the new credit count
+                    //if so, allowed is true, and we reduce credits by 1
                     Account receiverAccount = repository.findById(contents.receiverEmail).get();
                     if(receiverAccount.getCredits() > 0){
                         receiverAccount.setCredits(receiverAccount.getCredits() - 1);
                         repository.save(receiverAccount);
-                        //we add a notification to reader of the consumption of a credit
+                        //we add a notification to reader informing of the consumption of a credit
                         receiverAccount.setNotifications(NotificationManager.addNotification(notifLessCredit(receiverAccount.getCredits()), receiverAccount.getNotifications()));
                         
                         //we inform opinions service to go ahead
-                        MessageTypeB returnMessage = new MessageTypeB(true, true, null, null);
+                        returnSuccessMessage();
                     }
                     else{
                         System.out.println("failed: not enough credits");
@@ -103,6 +123,9 @@ public class AccountController {
                 //the user has opened the dashboard
                 //we return their current notifications
                 //we tell them how many credits they have
+                Account senderAccount = repository.findById(contents.senderEmail).get();
+                MessageTypeB successMessage = new MessageTypeB(true, true, senderAccount.getNotifications(), senderAccount.getCredits());
+                jmsTemplate.convertAndSend(queue, successMessage);
             }
             else{
                 System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
@@ -113,38 +136,7 @@ public class AccountController {
             System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
             returnUnsuccesfulMessage();
         }
-
-		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		try{
-			IncrementCheck incrementCheck = new IncrementCheck(attemptIncrement((String) message), jmsTemplate, queue);
-			executor.execute(incrementCheck);
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
     }
-
-    static class IncrementCheck implements Runnable{		
-        private boolean allowed;
-		private JmsTemplate jmsTemplate;
-		private Queue queue;
-
-        public IncrementCheck(boolean allowed, JmsTemplate jmsTemplate, Queue queue){
-            this.allowed = allowed;
-			this.jmsTemplate = jmsTemplate;
-			this.queue = queue;
-        }
-
-        public void run(){
-            try{
-				jmsTemplate.convertAndSend(queue, allowed);
-				System.out.println("SENT: " + allowed);
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-    } 
 
     @GetMapping("/accounts")
     public String homePage() {

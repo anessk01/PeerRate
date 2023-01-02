@@ -4,6 +4,8 @@ import com.dsproject.core.MessageTypeA;
 import com.dsproject.core.MessageTypeB;
 import com.dsproject.opinions.entity.Opinion;
 import com.dsproject.opinions.repository.OpinionRepository;
+
+import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.jms.core.JmsTemplate;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
 
@@ -47,7 +50,26 @@ public class OpinionController {
         model.addAttribute("opinionsOfUserNotViewed", opinionsOfUserNotViewed);
         
         //(JMS): await notifications to be fetched from accounts service
-        return "dashboard";
+        MessageTypeA messageTypeA = new MessageTypeA(currentUser, null, "fetch");
+        jmsTemplate.convertAndSend(queue, messageTypeA);
+
+        //await response from accounts microservice
+        Object message = jmsTemplate.receiveAndConvert("queueB");
+        if (message instanceof MessageTypeB) {
+            MessageTypeB contents = (MessageTypeB) message;
+            if(contents.allowed){
+                model.addAttribute("credits", contents.credits);
+                model.addAttribute("notifications", contents.notifications);
+                return "dashboard";
+            }
+            else{
+                return "error";
+            }
+        }
+        else{
+            System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+            return "error";
+        }
     }
 
     @GetMapping("/opinions/addForm")
@@ -101,20 +123,37 @@ public class OpinionController {
             System.out.println("you already reviewed this user: " + repository.checkIfReviewed(receiverEmail, currentUser));
             return "cannotPost";
         }
+        
         //if not, make sure that the receiver email is a valid user and increment credits
-        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        //if valid, go ahead (save to repo)
-        model.addAttribute("temp", repository.checkIfReviewed(receiverEmail, currentUser).size());
-        Opinion opinion = new Opinion();
-        opinion.setTimestamp(timestamp);
-        opinion.setSenderEmail(currentUser);
-        opinion.setReceiverEmail(receiverEmail);
-        opinion.setLikes(likes);
-        opinion.setDislikes(dislikes);
-        opinion.setViewed(false);
-        repository.save(opinion);
-        model.addAttribute("temp1", repository.checkIfReviewed(receiverEmail, currentUser).size());
-        return "success";
+        MessageTypeA messageTypeA = new MessageTypeA(currentUser, receiverEmail, "increment");
+        jmsTemplate.convertAndSend(queue, messageTypeA);
+        
+        //await response from accounts microservice
+        Object message = jmsTemplate.receiveAndConvert("queueB");
+        if (message instanceof MessageTypeB) {
+            MessageTypeB contents = (MessageTypeB) message;
+            if(contents.allowed){
+                //if valid, go ahead (save to repo)
+                model.addAttribute("temp", repository.checkIfReviewed(receiverEmail, currentUser).size());
+                Opinion opinion = new Opinion();
+                opinion.setTimestamp(timestamp);
+                opinion.setSenderEmail(currentUser);
+                opinion.setReceiverEmail(receiverEmail);
+                opinion.setLikes(likes);
+                opinion.setDislikes(dislikes);
+                opinion.setViewed(false);
+                repository.save(opinion);
+                model.addAttribute("temp1", repository.checkIfReviewed(receiverEmail, currentUser).size());
+                return "success";
+            }
+            else{
+                return "error";
+            }
+        }
+        else{
+            System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+            return "error";
+        }
     }
 
     @GetMapping("/opinions/get")
