@@ -4,15 +4,11 @@ import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
-
 
 @Entity
-@IdClass(OpinionPK.class)
 public class Opinion {
     @Id
     private LocalDateTime timestamp;
-    @Id
     private String senderEmail;
     private String receiverEmail;
     private String likes;

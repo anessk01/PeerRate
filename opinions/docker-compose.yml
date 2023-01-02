@@ -3,8 +3,8 @@ services:
   db:
     container_name: opinions
     image: mysql
-    ports: 
-      - 3307:3307   
+    ports:
+      - "33063:3306"
     environment:
       MYSQL_DATABASE: opinions
       MYSQL_ROOT_PASSWORD: wsch8001

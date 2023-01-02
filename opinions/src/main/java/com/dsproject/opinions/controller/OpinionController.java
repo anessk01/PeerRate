@@ -15,6 +15,7 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class OpinionController {
+    private static final String OpinionPK = null;
     String gatewayUrl = "https://localhost:8000";
     String loginUrl = "redirect:" + gatewayUrl + "/accounts/login";
 
@@ -86,21 +87,21 @@ public class OpinionController {
         HttpSession session) 
     {
         String currentUser = (String)session.getAttribute("username");
-        if(currentUser == null || !repository.findById(currentUser).isPresent()){
+        if(currentUser == null){
             return loginUrl;
         }
         System.out.println("Reached!");
         //USE SESSION TO AUTOFILL FIELDS
-        Optional<Account> optional = repository.findById(currentUser);
-        if (optional.isPresent()) {
-            Account account = optional.get();
-            model.addAttribute("oldName", account.getName());
-            model.addAttribute("oldPassword", account.getPassword());
-            model.addAttribute("oldCompany", account.getLastCompanyWorked());
-        }
-        else{
-            return loginUrl;
-        }
+        // Optional<Account> optional = repository.findById(currentUser);
+        // if (optional.isPresent()) {
+        //     Account account = optional.get();
+        //     model.addAttribute("oldName", account.getName());
+        //     model.addAttribute("oldPassword", account.getPassword());
+        //     model.addAttribute("oldCompany", account.getLastCompanyWorked());
+        // }
+        // else{
+        //     return loginUrl;
+        // }
         return "update";
     }
 

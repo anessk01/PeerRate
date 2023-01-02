@@ -6,7 +6,7 @@ spring:
     name: opinions
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3307/opinions
+    url: jdbc:mysql://localhost:33063/opinions
     username: root
     password: wsch8001
   jpa:
