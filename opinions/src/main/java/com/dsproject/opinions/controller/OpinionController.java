@@ -3,12 +3,14 @@ package com.dsproject.opinions.controller;
 import com.dsproject.opinions.entity.Opinion;
 import com.dsproject.opinions.repository.OpinionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import javax.servlet.http.HttpSession;
@@ -23,11 +25,13 @@ public class OpinionController {
     private OpinionRepository repository;
 
     @GetMapping("/opinions/dashboard")
-    public String dashboard(HttpSession session) {
+    public String dashboard(HttpSession session, Model model) {
         String currentUser = (String) session.getAttribute("username");
         if(currentUser == null){
             return loginUrl;
         }
+        ArrayList<Opinion> opinionsByUser = repository.findOpinionBySenderEmail(currentUser);
+        model.addAttribute("opinionsByUser", opinionsByUser);
         //(JMS): await notifications to be fetched from accounts service
         return "dashboard";
     }
@@ -42,6 +46,16 @@ public class OpinionController {
         String currentUser = (String) session.getAttribute("username");
         if(currentUser == null){
             return loginUrl;
+        }
+        //check if the person is trying to review themself
+        if(receiverEmail.toLowerCase().equals(currentUser.toLowerCase())){
+            System.out.println("cannot review yourself.");
+            return "cannotPost";
+        }
+        //check if the current user reviewed the receiver before (repo query)
+        if(repository.checkIfReviewed(receiverEmail, currentUser).size() != 0){
+            System.out.println("you already reviewed this user: " + repository.checkIfReviewed(receiverEmail, currentUser));
+            return "cannotPost";
         }
         model.addAttribute("receiverName", receiverName);
         model.addAttribute("receiverEmail", receiverEmail);
@@ -91,7 +105,7 @@ public class OpinionController {
 
     @GetMapping("/opinions/get")
     public String getOpinion(
-        @RequestParam("timestamp") LocalDateTime timestamp,
+        @RequestParam("timestamp") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp,
         HttpSession session) 
     {
         String currentUser = (String) session.getAttribute("username");
@@ -110,7 +124,7 @@ public class OpinionController {
 
     @GetMapping("/opinions/updateForm")
     public String goUpdateForm(
-        @RequestParam("timestamp") LocalDateTime timestamp,
+        @RequestParam("timestamp") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp,
         Model model,
         HttpSession session) 
     {
@@ -119,23 +133,31 @@ public class OpinionController {
             return loginUrl;
         }
         System.out.println("Reached!");
-        //USE SESSION TO AUTOFILL FIELDS
-        // Optional<Account> optional = repository.findById(currentUser);
-        // if (optional.isPresent()) {
-        //     Account account = optional.get();
-        //     model.addAttribute("oldName", account.getName());
-        //     model.addAttribute("oldPassword", account.getPassword());
-        //     model.addAttribute("oldCompany", account.getLastCompanyWorked());
-        // }
-        // else{
-        //     return loginUrl;
-        // }
+        //check that timestamp refers to post made by currentUser
+        //if so, add to model the email, timestamp, likes and dislikes
+        Optional<Opinion> optional = repository.findByTimestamp(timestamp);
+        if(optional.isPresent()){
+            Opinion opinion = optional.get();
+            if(opinion.getSenderEmail().equals(currentUser)){
+                model.addAttribute("receiverEmail", opinion.getReceiverEmail());
+                model.addAttribute("timestamp", opinion.getTimestamp());
+                model.addAttribute("oldLikes", opinion.getLikes());
+                model.addAttribute("oldDislikes", opinion.getDislikes());
+            }
+            else{
+                return "invalidPost";
+            }
+        }
+        else{
+            return "invalidPost";
+        }
         return "update";
     }
 
+    // Should be PUT ideally but HTML does not support PUT requests
     @PostMapping("/opinions/update")
     public String update(
-        @RequestParam("timestamp") LocalDateTime timestamp,
+        @RequestParam("timestamp") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp,
         @RequestParam("likes") String likes,
         @RequestParam("dislikes") String dislikes, 
         HttpSession session) 
@@ -144,7 +166,22 @@ public class OpinionController {
         if(currentUser == null){
             return loginUrl;
         }
-        //update 
-        return "stub";
+        Optional<Opinion> optional = repository.findByTimestamp(timestamp);
+        if(optional.isPresent()){
+            Opinion opinion = optional.get();
+            if(opinion.getSenderEmail().equals(currentUser)){
+                //check that timestamp refers to post made by currentUser before updating
+                opinion.setLikes(likes);
+                opinion.setDislikes(dislikes);
+                repository.save(opinion);
+            }
+            else{
+                return "invalidPost";
+            }
+        }
+        else{
+            return "invalidPost";
+        }
+        return "success";
     }
 }

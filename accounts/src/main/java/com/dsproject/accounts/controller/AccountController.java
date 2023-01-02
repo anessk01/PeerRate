@@ -129,6 +129,7 @@ public class AccountController {
         return "update";
     }
 
+    // Should be PUT ideally but HTML does not support PUT requests
     @PostMapping("/accounts/update")
     public String update(@RequestParam("password") String password,
                           @RequestParam("name") String name,

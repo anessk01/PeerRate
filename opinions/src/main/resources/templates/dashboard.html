@@ -5,11 +5,20 @@
     <title>PeerRate | Dash</title>
 </head>
 <body>
-    Signed in: <div th:text="${session.username}"></div>
+    Signed in: <span th:text="${session.username}"></span>
     <a href="/accounts/logout">Log Out</a><br>
     <form action="/accounts/search" method="GET">
         <p>Search for Peers by their Company:</p>
         <br> <input type="text" name="company" placeholder="Eg: Microsoft"> <input type="submit" value="Search"></p>
     </form>
+    Your Reviews:
+    <tr th:each="data, iterstat: ${opinionsByUser}">
+        <form action="/opinions/updateForm", method="get">
+            <div th:text="'Your Review of: ' + ${opinionsByUser[iterstat.index].receiverEmail}"></div>
+            <input type="text" style="display:none" name="timestamp" th:value="${opinionsByUser[iterstat.index].timestamp}">
+            <div th:text="${opinionsByUser[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsByUser[iterstat.index].likes.length()))} + '...'"></div>
+            <input type="submit" value="Edit Review"></td>
+        </form><br>
+    </tr>
 </body>
 </html>
