@@ -91,7 +91,7 @@ public class OpinionController {
             System.out.println("you already reviewed this user: " + repository.checkIfReviewed(receiverEmail, currentUser));
             return "cannotPost";
         }
-        //if not, make sure that the receiver email is a valid user (JMS queues)
+        //if not, make sure that the receiver email is a valid user and increment credits
         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //if valid, go ahead (save to repo)
         model.addAttribute("temp", repository.checkIfReviewed(receiverEmail, currentUser).size());
@@ -110,7 +110,8 @@ public class OpinionController {
     @GetMapping("/opinions/get")
     public String getOpinion(
         @RequestParam("timestamp") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp,
-        HttpSession session) 
+        HttpSession session, 
+        Model model) 
     {
         String currentUser = (String) session.getAttribute("username");
         if(currentUser == null){
@@ -118,10 +119,28 @@ public class OpinionController {
         }
         
         //check that a post with this timestamp and (receiveEmail in session) exists
-        //check that post was not viewed before. if it was then just show it again for free
-        //if not, check if the user has enough credits (JMS) and deduct automatically on accounts service if they do
-        //if true returned, show post and mark it as viewed.
-        //if valid, go ahead (save to repo)
+        Optional<Opinion> optional = repository.findByTimestamp(timestamp);
+        if(optional.isPresent()){
+            Opinion opinion = optional.get();
+            if(opinion.getSenderEmail().equals(currentUser)){
+                //check that post was not viewed before. if it was then just show it again for free
+                if(opinion.getViewed()){
+                    model.addAttribute("opinion", opinion);
+                    return "expandedOpinion";
+                }
+                else{
+                    //if not, check if the user has enough credits (JMS) and deduct automatically on accounts service if they do
+                    //if true returned, show post and mark it as viewed. save to repo.
+                }
+            }
+            else{
+                return "invalidPost";
+            }
+        }
+        else{
+            return "invalidPost";
+        }
+        
         return "stub";
     }
 

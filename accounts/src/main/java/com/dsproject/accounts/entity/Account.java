@@ -1,7 +1,6 @@
 package com.dsproject.accounts.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.persistence.Entity;

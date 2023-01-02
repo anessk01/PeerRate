@@ -1,8 +1,10 @@
 package com.dsproject.accounts.controller;
 
+import com.dsproject.core.MessageTypeA;
 import com.dsproject.accounts.entity.Account;
 import com.dsproject.accounts.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Optional;
 
+import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -20,8 +23,17 @@ public class AccountController {
     @Autowired
     private AccountRepository repository;
 
-    @GetMapping("/")
+    @Autowired
+	JmsTemplate jmsTemplate;
+	
+	@Autowired
+	Queue queue;
+
+    @GetMapping("/accounts")
     public String homePage() {
+        MessageTypeA messageTypeA = new MessageTypeA("sender", "receiver", "increment");
+		jmsTemplate.convertAndSend(queue, messageTypeA);
+        System.out.println("sent");
         return "home";
     }
 
