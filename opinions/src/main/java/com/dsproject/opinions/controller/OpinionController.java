@@ -1,9 +1,12 @@
 package com.dsproject.opinions.controller;
 
+import com.dsproject.core.MessageTypeA;
+import com.dsproject.core.MessageTypeB;
 import com.dsproject.opinions.entity.Opinion;
 import com.dsproject.opinions.repository.OpinionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -21,6 +25,12 @@ public class OpinionController {
 
     @Autowired
     private OpinionRepository repository;
+
+    @Autowired
+	JmsTemplate jmsTemplate;
+	
+	@Autowired
+	Queue queue;
 
     @GetMapping("/opinions/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -122,7 +132,7 @@ public class OpinionController {
         Optional<Opinion> optional = repository.findByTimestamp(timestamp);
         if(optional.isPresent()){
             Opinion opinion = optional.get();
-            if(opinion.getSenderEmail().equals(currentUser)){
+            if(opinion.getReceiverEmail().equals(currentUser)){
                 //check that post was not viewed before. if it was then just show it again for free
                 if(opinion.getViewed()){
                     model.addAttribute("opinion", opinion);
@@ -131,6 +141,27 @@ public class OpinionController {
                 else{
                     //if not, check if the user has enough credits (JMS) and deduct automatically on accounts service if they do
                     //if true returned, show post and mark it as viewed. save to repo.
+                    MessageTypeA messageTypeA = new MessageTypeA(opinion.getSenderEmail(), currentUser, "decrement");
+		            jmsTemplate.convertAndSend(queue, messageTypeA);
+
+                    //await response from accounts microservice
+                    Object message = jmsTemplate.receiveAndConvert("queueB");
+                    if (message instanceof MessageTypeB) {
+                        MessageTypeB contents = (MessageTypeB) message;
+                        if(contents.allowed){
+                            opinion.setViewed(true);
+                            repository.save(opinion);
+                            model.addAttribute("opinion", opinion);
+                            return "expandedOpinion";
+                        }
+                        else{
+                            return "noCredits";
+                        }
+                    }
+                    else{
+                        System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+                        return "error";
+                    }
                 }
             }
             else{
@@ -140,8 +171,6 @@ public class OpinionController {
         else{
             return "invalidPost";
         }
-        
-        return "stub";
     }
 
 

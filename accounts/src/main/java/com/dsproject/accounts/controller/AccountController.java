@@ -1,9 +1,11 @@
 package com.dsproject.accounts.controller;
 
 import com.dsproject.core.MessageTypeA;
+import com.dsproject.core.MessageTypeB;
 import com.dsproject.accounts.entity.Account;
 import com.dsproject.accounts.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
@@ -28,6 +32,85 @@ public class AccountController {
 	
 	@Autowired
 	Queue queue;
+
+    public void returnUnsuccesfulMessage(){
+        MessageTypeB errorMessage = new MessageTypeB(false, false, null, null);
+        jmsTemplate.convertAndSend(queue, errorMessage);
+    }
+
+    @JmsListener(destination = "queueA")
+    public void consume(Object message){
+		System.out.println("CALLED");
+        if (message instanceof MessageTypeA) {
+            MessageTypeA contents = (MessageTypeA) message;
+            if(contents.type.equals("increment")){
+                //the user has just tried to add a review.
+                //on accounts microservice, we validate recepient email
+                if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
+                    //we increment sender user credits
+                    Account senderAccount = repository.findById(contents.senderEmail).get();
+                    senderAccount.setCredits(senderAccount.getCredits() + 1);
+                    repository.save(senderAccount);
+                    //we add a notification to sender that they have a new credit
+                    //we add a notification to receiver that they have been reviewed
+                }
+                else{
+                    System.out.println("failed: fake receiver or sender");
+                    returnUnsuccesfulMessage();
+                }
+            }
+            else if(contents.type.equals("decrement")){
+                //the user has just attempted to read a review they hadn't read before
+                //we check that they have enough credits (1 or more)
+                //if so, allowed is true, and we reduce credits by 1. we return the new credit count
+                //otherwise it is false
+            }
+            else if(contents.type.equals("fetch")){
+                //the user has opened the dashboard
+                //we return their current notifications
+                //we tell them how many credits they have
+            }
+            else{
+                System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+                returnUnsuccesfulMessage();
+            }
+        }
+        else{
+            System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+            returnUnsuccesfulMessage();
+        }
+
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		try{
+			IncrementCheck incrementCheck = new IncrementCheck(attemptIncrement((String) message), jmsTemplate, queue);
+			executor.execute(incrementCheck);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+    }
+
+    static class IncrementCheck implements Runnable{		
+        private boolean allowed;
+		private JmsTemplate jmsTemplate;
+		private Queue queue;
+
+        public IncrementCheck(boolean allowed, JmsTemplate jmsTemplate, Queue queue){
+            this.allowed = allowed;
+			this.jmsTemplate = jmsTemplate;
+			this.queue = queue;
+        }
+
+        public void run(){
+            try{
+				jmsTemplate.convertAndSend(queue, allowed);
+				System.out.println("SENT: " + allowed);
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+    } 
 
     @GetMapping("/accounts")
     public String homePage() {
