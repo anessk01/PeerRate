@@ -1,6 +1,6 @@
-package com.dsproject.accounts.repository;
+package com.dsproject.opinions.repository;
 
-import com.dsproject.accounts.entity.Account;
+import com.dsproject.opinions.entity.Opinion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -9,16 +9,13 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Repository
-public interface AccountRepository extends JpaRepository<Account, String> {
+public interface OpinionRepository extends JpaRepository<Opinion, String> {
     @Query("SELECT a.name FROM Account a where a.lastCompanyWorked = :company") 
     ArrayList<String> findIdByCompany(String company);
 
     @Query("SELECT a.password FROM Account a where a.email = :email") 
     String findPasswordByEmail(String email);
 
-    @Query("SELECT a.notifications FROM Account a where a.email = :email") 
-    ArrayList<String> getNotificationsByEmail(String email);
-
     // @Query("SELECT a.email FROM Account a where a.email = :email") 
-    Optional<Account> findById(String email);
+    Optional<Opinion> findById(String email);
 }

@@ -1,5 +1,7 @@
 package com.dsproject.accounts.entity;
 
+import java.util.ArrayList;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -11,6 +13,7 @@ public class Account {
     private String name;
     private String lastCompanyWorked;
     private int credits;
+    private ArrayList<String> notifications;
 
     public String getEmail() {
         return email;
@@ -50,5 +53,13 @@ public class Account {
 
     public void setCredits(int credits) {
         this.credits = credits;
+    }
+
+    public ArrayList<String> getNotifications(){
+        return notifications;
+    }
+
+    public void setNotifications(ArrayList<String> notifications){
+        this.notifications = notifications;
     }
 }

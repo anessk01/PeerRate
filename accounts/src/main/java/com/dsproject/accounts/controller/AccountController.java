@@ -180,4 +180,6 @@ public class AccountController {
             return null;
         }
     }
+
+    //NOTIFICATION LOGIC: SET AND GET GOES HERE
 }

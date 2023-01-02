@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Update</title>
+</head>
+<body>
+<form action="http://localhost:8080/accounts/update" method="post">
+  Signed in: <div th:text="${session.username}"></div>
+  <p>Password: <input type="text" name="password" th:value="${oldPassword}"></p>
+  <p>Company: <input type="text" name="company" th:value="${oldCompany}"></p>
+  <p>Name: <input type="text" name="name" th:value="${oldName}"></p>
+  <p><input type="submit" value="OK"></p>
+</form>
+</body>
+</html>
