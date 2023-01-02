@@ -11,6 +11,10 @@ public class NotificationManager {
      */
     public static LinkedList<String> addNotification(String newNotification, LinkedList<String> notifications){
         // if the number of notifications has exceeded MAXNOTIFCOUNT, remove the oldest notification so that a new one is added
+        if(notifications == null){
+            notifications = new LinkedList<String>();
+        }
+        
         if(notifications.size() == MAXNOTIFCOUNT){
             notifications.remove();
         }

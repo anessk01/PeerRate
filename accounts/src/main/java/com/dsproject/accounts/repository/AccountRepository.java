@@ -23,6 +23,5 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     @Query("SELECT a.notifications FROM Account a where a.email = :email") 
     ArrayList<String> getNotificationsByEmail(String email);
 
-    // @Query("SELECT a.email FROM Account a where a.email = :email") 
     Optional<Account> findById(String email);
 }
