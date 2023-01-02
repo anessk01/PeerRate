@@ -3,6 +3,7 @@ package com.dsproject.accounts.controller;
 import com.dsproject.core.MessageTypeA;
 import com.dsproject.core.MessageTypeB;
 import com.dsproject.accounts.entity.Account;
+import com.dsproject.accounts.helpers.NotificationManager;
 import com.dsproject.accounts.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
@@ -12,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +26,14 @@ import javax.servlet.http.HttpSession;
 public class AccountController {
     String gatewayUrl = "http://localhost:8000";
     String dashUrl = "redirect:" + gatewayUrl + "/opinions/dashboard";
+    final String notifNewCredit = "You have a new credit because of your latest review! Check it out!";
+    final String notifNewReview = "Someone has reviewed you! Check it out!";
+    private String notifNewPeer(String peerName){
+        return peerName + " has just joined PeerRate who works in Your Company. Check it out!";
+    }
+    private String notifLessCredit(Integer newCreditCount){
+        return "You have consumed a credit by viewing the review. Review others to get more! New Count: " + newCreditCount;
+    }
 
     @Autowired
     private AccountRepository repository;
@@ -49,10 +60,13 @@ public class AccountController {
                 if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
                     //we increment sender user credits
                     Account senderAccount = repository.findById(contents.senderEmail).get();
+                    Account receiverAccount = repository.findById(contents.receiverEmail).get();
                     senderAccount.setCredits(senderAccount.getCredits() + 1);
                     repository.save(senderAccount);
                     //we add a notification to sender that they have a new credit
+                    senderAccount.setNotifications(NotificationManager.addNotification(notifNewCredit, senderAccount.getNotifications()));
                     //we add a notification to receiver that they have been reviewed
+                    receiverAccount.setNotifications(NotificationManager.addNotification(notifNewReview, receiverAccount.getNotifications()));
                 }
                 else{
                     System.out.println("failed: fake receiver or sender");
@@ -62,8 +76,28 @@ public class AccountController {
             else if(contents.type.equals("decrement")){
                 //the user has just attempted to read a review they hadn't read before
                 //we check that they have enough credits (1 or more)
-                //if so, allowed is true, and we reduce credits by 1. we return the new credit count
-                //otherwise it is false
+                if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
+                    //if so, allowed is true, and we reduce credits by 1. we return the new credit count
+                    Account receiverAccount = repository.findById(contents.receiverEmail).get();
+                    if(receiverAccount.getCredits() > 0){
+                        receiverAccount.setCredits(receiverAccount.getCredits() - 1);
+                        repository.save(receiverAccount);
+                        //we add a notification to reader of the consumption of a credit
+                        receiverAccount.setNotifications(NotificationManager.addNotification(notifLessCredit(receiverAccount.getCredits()), receiverAccount.getNotifications()));
+                        
+                        //we inform opinions service to go ahead
+                        MessageTypeB returnMessage = new MessageTypeB(true, true, null, null);
+                    }
+                    else{
+                        System.out.println("failed: not enough credits");
+                        returnUnsuccesfulMessage();
+                    }
+                }
+                else{
+                    //otherwise it is false
+                    System.out.println("failed: fake receiver or sender");
+                    returnUnsuccesfulMessage();
+                }
             }
             else if(contents.type.equals("fetch")){
                 //the user has opened the dashboard
@@ -161,8 +195,16 @@ public class AccountController {
             account.setLastCompanyWorked(company);
             account.setName(name);
             account.setPassword(password);
-            repository.save(account);
             session.setAttribute("username", email);
+            
+            //notify all people in this person's company of their joining
+            List<Account> companyProfiles = repository.returnAllInCompany(company);
+            for(Account companyProfile: companyProfiles){
+                companyProfile.setNotifications(NotificationManager.addNotification(notifNewPeer(name), companyProfile.getNotifications()));
+                repository.save(companyProfile);
+            }
+
+            repository.save(account);
             return dashUrl; 
         }
     }

@@ -1,7 +1,6 @@
 package com.dsproject.accounts.entity;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.LinkedList;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -14,7 +13,7 @@ public class Account {
     private String name;
     private String lastCompanyWorked;
     private int credits;
-    private HashMap<LocalDateTime, String> notifications;
+    private LinkedList<String> notifications;  //stored sequentially
 
     public String getEmail() {
         return email;
@@ -56,11 +55,11 @@ public class Account {
         this.credits = credits;
     }
 
-    public HashMap<LocalDateTime, String> getNotifications(){
+    public LinkedList<String>  getNotifications(){
         return notifications;
     }
 
-    public void setNotifications(HashMap<LocalDateTime, String> notifications){
+    public void setNotifications(LinkedList<String>  notifications){
         this.notifications = notifications;
     }
 }
