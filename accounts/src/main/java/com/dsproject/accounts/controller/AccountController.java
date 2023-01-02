@@ -16,11 +16,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.jms.JMSException;
 import javax.jms.Queue;
@@ -81,11 +79,22 @@ public class AccountController{
                     Account senderAccount = repository.findById(contents.senderEmail).get();
                     Account receiverAccount = repository.findById(contents.receiverEmail).get();
                     senderAccount.setCredits(senderAccount.getCredits() + 1);
-                    repository.save(senderAccount);
+
+                    LinkedList<String> notificationsSender = senderAccount.getNotifications();
+                    if(notificationsSender == null){
+                        notificationsSender = new LinkedList<String>();
+                    }
                     //we add a notification to sender that they have a new credit
-                    senderAccount.setNotifications(NotificationManager.addNotification(notifNewCredit, senderAccount.getNotifications()));
+                    senderAccount.setNotifications(NotificationManager.addNotification(notifNewCredit, notificationsSender));
+
+                    LinkedList<String> notificationsReceiver = receiverAccount.getNotifications();
+                    if(notificationsReceiver == null){
+                        notificationsReceiver = new LinkedList<String>();
+                    }
                     //we add a notification to receiver that they have been reviewed
-                    receiverAccount.setNotifications(NotificationManager.addNotification(notifNewReview, receiverAccount.getNotifications()));
+                    receiverAccount.setNotifications(NotificationManager.addNotification(notifNewReview, notificationsReceiver));
+                    repository.save(senderAccount);
+                    repository.save(receiverAccount);
                     returnSuccessMessage();
                 }
                 else{
@@ -101,10 +110,15 @@ public class AccountController{
                     Account receiverAccount = repository.findById(contents.receiverEmail).get();
                     if(receiverAccount.getCredits() > 0){
                         receiverAccount.setCredits(receiverAccount.getCredits() - 1);
-                        repository.save(receiverAccount);
+
+                        LinkedList<String> notificationsReceiver = receiverAccount.getNotifications();
+                        if(notificationsReceiver == null){
+                            notificationsReceiver = new LinkedList<String>();
+                        }
                         //we add a notification to reader informing of the consumption of a credit
-                        receiverAccount.setNotifications(NotificationManager.addNotification(notifLessCredit(receiverAccount.getCredits()), receiverAccount.getNotifications()));
+                        receiverAccount.setNotifications(NotificationManager.addNotification(notifLessCredit(receiverAccount.getCredits()), notificationsReceiver));
                         
+                        repository.save(receiverAccount);
                         //we inform opinions service to go ahead
                         returnSuccessMessage();
                     }
@@ -124,7 +138,9 @@ public class AccountController{
                 //we return their current notifications
                 //we tell them how many credits they have
                 Account senderAccount = repository.findById(contents.senderEmail).get();
+                System.out.println("CALLED4");
                 MessageTypeB successMessage = new MessageTypeB(true, true, senderAccount.getNotifications(), senderAccount.getCredits());
+                System.out.println("CALLED5");
                 jmsTemplate.convertAndSend(queue, successMessage);
             }
             else{
@@ -192,7 +208,11 @@ public class AccountController{
             //notify all people in this person's company of their joining
             List<Account> companyProfiles = repository.returnAllInCompany(company);
             for(Account companyProfile: companyProfiles){
-                companyProfile.setNotifications(NotificationManager.addNotification(notifNewPeer(name), companyProfile.getNotifications()));
+                LinkedList<String> notificationsCompany = companyProfile.getNotifications();
+                if(notificationsCompany == null){
+                    notificationsCompany = new LinkedList<String>();
+                }
+                companyProfile.setNotifications(NotificationManager.addNotification(notifNewPeer(name), notificationsCompany));
                 repository.save(companyProfile);
             }
 

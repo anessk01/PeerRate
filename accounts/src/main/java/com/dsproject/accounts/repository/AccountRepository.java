@@ -20,8 +20,8 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     @Query("SELECT a.password FROM Account a where a.email = :email") 
     String findPasswordByEmail(String email);
 
-    @Query("SELECT a.notifications FROM Account a where a.email = :email") 
-    ArrayList<String> getNotificationsByEmail(String email);
+    // @Query("SELECT a.notifications FROM Account a where a.email = :email") 
+    // List<String> getNotificationsByEmail(String email);
 
     Optional<Account> findById(String email);
 }
