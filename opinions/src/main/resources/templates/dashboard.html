@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PeerRate | Dash</title>
+</head>
+<body>
+    Signed in: <div th:text="${session.username}"></div>
+    <a href="/accounts/logout">Log Out</a><br>
+    <form action="/accounts/search" method="GET">
+        <p>Search for Peers by their Company:</p>
+        <br> <input type="text" name="company" placeholder="Eg: Microsoft"> <input type="submit" value="Search"></p>
+    </form>
+</body>
+</html>

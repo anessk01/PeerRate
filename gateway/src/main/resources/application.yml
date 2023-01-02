@@ -1,5 +1,5 @@
 server:
-  port: 8071
+  port: 8000
 
 spring:
  application:
@@ -11,6 +11,10 @@ spring:
          uri: lb://ACCOUNTS
          predicates:
            - Path=/accounts/**
+       - id: opinions
+         uri: lb://OPINIONS
+         predicates:
+           - Path=/opinions/**
 
 eureka:
   client: 

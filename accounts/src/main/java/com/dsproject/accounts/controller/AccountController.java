@@ -14,6 +14,9 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class AccountController {
+    String gatewayUrl = "http://localhost:8000";
+    String dashUrl = "redirect:" + gatewayUrl + "/opinions/dashboard";
+
     @Autowired
     private AccountRepository repository;
 
@@ -32,7 +35,7 @@ public class AccountController {
         if(currentUser == null || !repository.findById(currentUser).isPresent()){
             return "redirect:/accounts/login";
         }
-        model.addAttribute("searchResults", repository.findIdByCompany(company));
+        model.addAttribute("searchResults", repository.findIdByCompany(company, currentUser));
         return "searchResults";
     }
 
@@ -40,7 +43,7 @@ public class AccountController {
     public String signup(HttpSession session) {
         String currentUser = (String)session.getAttribute("username");
         if(currentUser != null && repository.findById(currentUser).isPresent()){
-            return "success";
+            return dashUrl;
         }
         return "signup";
     }
@@ -65,7 +68,7 @@ public class AccountController {
             account.setPassword(password);
             repository.save(account);
             session.setAttribute("username", email);
-            return "success"; //TO DO: REDIRECT TO DASH
+            return dashUrl; 
         }
     }
 
@@ -73,7 +76,7 @@ public class AccountController {
     public String login(HttpSession session) {
         String currentUser = (String) session.getAttribute("username");
         if(currentUser != null && repository.findById(currentUser).isPresent()){
-            return "success";
+            return dashUrl;
         }
         return "login";
     }
@@ -86,7 +89,7 @@ public class AccountController {
     {
         String currentUser = (String) session.getAttribute("username");
         if(currentUser != null && repository.findById(currentUser).isPresent()){
-            return "success";
+            return dashUrl;
         }
         if (!repository.findById(email).isPresent()) {
             System.out.println("no email");
@@ -95,7 +98,7 @@ public class AccountController {
         else {
             if(repository.findPasswordByEmail(email).equals(password)){
                 session.setAttribute("username", email);
-                return "success"; //TO DO: REDIRECT TO DASH
+                return dashUrl;
             }
             else{
                 System.out.println(email);
@@ -143,14 +146,14 @@ public class AccountController {
             account.setPassword(password);
             account.setLastCompanyWorked(company);
             repository.save(account);
-            return "success";
+            return dashUrl;
         } 
         else {
             return "AccountDoesNotExist";
         }
     }
 
-    @RequestMapping("/logout")
+    @RequestMapping("/accounts/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/accounts/login";

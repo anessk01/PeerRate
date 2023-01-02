@@ -5,7 +5,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-    Signed in: <div th:text="${session.username}"></div>
-    <p th:text="'Results: ' + ${searchResults}" />
+    Signed in: <span th:text="${session.username}"></span>
+    <p th:text="'Results: ' + ${searchResults[0][0]}" />
+    <tr th:each="data, iterstat: ${searchResults}">
+        <form action="/opinions/addForm">
+            <input style="display:none" type="text" name="receiverName" th:value="${searchResults[iterstat.index][0]}">
+            <input style="display:none" name="receiverEmail" th:value="${searchResults[iterstat.index][1]}">
+            <input type="submit" th:value="'Review ' + ${searchResults[iterstat.index][0]}"></td>
+        </form><br>
+    </tr>
 </body>
 </html>

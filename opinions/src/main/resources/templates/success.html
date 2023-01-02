@@ -2,11 +2,15 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Success</title>
+    <title>Success!</title>
 </head>
 <body>
-    Signed in: <div th:text="${session.username}"></div>
-    Success
-    <a href="/logout">Log Out</a>
+    Signed in: <span th:text="${session.username}"></span><br>
+    Success! <a href="/opinions/dashboard">Go to Dashboard</a><br>
+    <a href="/accounts/logout">Log Out</a>
+
+    <div>TEMP</div>
+    <div th:text="${temp}"></div>
+    <div th:text="${temp1}"></div>
 </body>
 </html>

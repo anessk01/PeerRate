@@ -1,6 +1,8 @@
 package com.dsproject.accounts.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -13,7 +15,7 @@ public class Account {
     private String name;
     private String lastCompanyWorked;
     private int credits;
-    private ArrayList<String> notifications;
+    private HashMap<LocalDateTime, String> notifications;
 
     public String getEmail() {
         return email;
@@ -55,11 +57,11 @@ public class Account {
         this.credits = credits;
     }
 
-    public ArrayList<String> getNotifications(){
+    public HashMap<LocalDateTime, String> getNotifications(){
         return notifications;
     }
 
-    public void setNotifications(ArrayList<String> notifications){
+    public void setNotifications(HashMap<LocalDateTime, String> notifications){
         this.notifications = notifications;
     }
 }

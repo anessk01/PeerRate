@@ -51,8 +51,8 @@ public class Opinion {
         return dislikes;
     }
 
-    public void setDislikes(String likes) {
-        this.likes = likes;
+    public void setDislikes(String dislikes) {
+        this.dislikes = dislikes;
     }
 
     public Boolean getViewed(){
