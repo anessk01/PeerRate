@@ -1,0 +1,148 @@
+version: '3'
+
+services:
+  redis-server:
+    image: "redis:alpine"
+    command: redis-server
+    restart: on-failure
+    # network_mode: "host"
+    ports:
+      - "6379:6379"
+
+  activemq:
+    image: rmohr/activemq:latest
+    container_name: 'activemq'
+    # network_mode: "host"
+    restart: on-failure
+    ports: 
+      - 8161:8161
+      - 61616:61616
+    volumes:
+      - ~/Documents/data/activemq/data:/data/activemq
+      - ~/Documents/data/activemq/log:/var/log/activemq
+
+
+  eureka:
+    build: eureka
+    # network_mode: "host"
+    restart: on-failure
+    ports:
+      - "8070:8070"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8070"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  accountsDB:
+    container_name: accountsDB
+    image: mysql
+    ports: 
+      - 3306:3306   
+    environment:
+      MYSQL_DATABASE: accounts
+      MYSQL_ROOT_PASSWORD: wsch8001
+    volumes:
+      - ./accounts/dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3306"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  aggregatorDB:
+    container_name: aggregatorDB
+    image: mysql
+    ports: 
+      - 33064:3306   
+    environment:
+      MYSQL_DATABASE: aggregator
+      MYSQL_ROOT_PASSWORD: wsch8001
+    volumes:
+      - ./aggregator/dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:33064"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  opinionsDB:
+    container_name: opinionsDB
+    image: mysql
+    ports:
+      - "33063:3306"
+    environment:
+      MYSQL_DATABASE: opinions
+      MYSQL_ROOT_PASSWORD: wsch8001
+    volumes:
+      - ./opinions/dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:33063"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  gateway:
+    build: gateway
+    # network_mode: "host"
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    depends_on:
+      - eureka
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  accounts:
+    build: accounts
+    # network_mode: "host"
+    restart: on-failure
+    depends_on:
+      - eureka
+      - redis-server
+      - activemq
+      - accountsDB
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  aggregator:
+    build: aggregator
+    # network_mode: "host"
+    restart: on-failure
+    depends_on:
+      - eureka
+      - redis-server
+      - activemq
+      - aggregatorDB
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  opinions:
+    build: opinions
+    # network_mode: "host"
+    restart: on-failure
+    depends_on:
+      - eureka
+      - redis-server
+      - activemq
+      - opinionsDB
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
