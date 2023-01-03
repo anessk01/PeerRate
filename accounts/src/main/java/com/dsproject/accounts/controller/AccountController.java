@@ -59,7 +59,6 @@ public class AccountController{
     @JmsListener(destination = "queueA")
     public void consume(Object received) throws JmsException{
         //should ideally be handled using threads, but JPA is not thread safe.
-		System.out.println("CALLED");
         ActiveMQObjectMessage receivedConverted = (ActiveMQObjectMessage) received;
         Object message;
         try {
@@ -138,9 +137,7 @@ public class AccountController{
                 //we return their current notifications
                 //we tell them how many credits they have
                 Account senderAccount = repository.findById(contents.senderEmail).get();
-                System.out.println("CALLED4");
                 MessageTypeB successMessage = new MessageTypeB(true, true, senderAccount.getNotifications(), senderAccount.getCredits());
-                System.out.println("CALLED5");
                 jmsTemplate.convertAndSend(queue, successMessage);
             }
             else{
@@ -213,6 +210,7 @@ public class AccountController{
                     notificationsCompany = new LinkedList<String>();
                 }
                 companyProfile.setNotifications(NotificationManager.addNotification(notifNewPeer(name), notificationsCompany));
+                System.out.println(">>>" + companyProfile.getNotifications());
                 repository.save(companyProfile);
             }
 
@@ -263,7 +261,6 @@ public class AccountController{
         if(currentUser == null || !repository.findById(currentUser).isPresent()){
             return "redirect:/accounts/login";
         }
-        System.out.println("Reached!");
         //USE SESSION TO AUTOFILL FIELDS
         Optional<Account> optional = repository.findById(currentUser);
         if (optional.isPresent()) {
@@ -305,7 +302,9 @@ public class AccountController{
 
     @RequestMapping("/accounts/logout")
     public String logout(HttpSession session) {
-        session.invalidate();
+        if(session != null) {
+            session.invalidate();
+        }
         return "redirect:/accounts/login";
     }
 
@@ -333,6 +332,4 @@ public class AccountController{
             return null;
         }
     }
-
-    //NOTIFICATION LOGIC: SET AND GET GOES HERE
 }

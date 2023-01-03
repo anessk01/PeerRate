@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Optional;
 
-import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
 
@@ -58,8 +59,15 @@ public class OpinionController {
         if (message instanceof MessageTypeB) {
             MessageTypeB contents = (MessageTypeB) message;
             if(contents.allowed){
+                LinkedList<String> notifications = contents.notifications;
+                try{
+                    Collections.reverse(notifications);
+                }
+                catch(Exception e){
+                    //in case notifications is empty
+                }
+                model.addAttribute("notifications", notifications);
                 model.addAttribute("credits", contents.credits);
-                model.addAttribute("notifications", contents.notifications);
                 return "dashboard";
             }
             else{
@@ -223,7 +231,6 @@ public class OpinionController {
         if(currentUser == null){
             return loginUrl;
         }
-        System.out.println("Reached!");
         //check that timestamp refers to post made by currentUser
         //if so, add to model the email, timestamp, likes and dislikes
         Optional<Opinion> optional = repository.findByTimestamp(timestamp);

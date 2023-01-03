@@ -6,7 +6,6 @@
 </head>
 <body>
     Signed in: <span th:text="${session.username}"></span>
-    {% comment %} <p th:text="'Results: ' + ${searchResults[0][0]}" /> {% endcomment %}
     <tr th:each="data, iterstat: ${searchResults}">
         <form action="/opinions/addForm">
             <input style="display:none" type="text" name="receiverName" th:value="${searchResults[iterstat.index][0]}">

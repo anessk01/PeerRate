@@ -2,6 +2,7 @@ package com.dsproject.accounts.entity;
 
 import java.util.LinkedList;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -13,7 +14,8 @@ public class Account {
     private String name;
     private String lastCompanyWorked;
     private int credits;
-    private LinkedList<String> notifications;  //stored sequentially
+    @Column(name="NOTIFICATIONS",columnDefinition="longblob")
+    private LinkedList<String> notifications; 
 
     public String getEmail() {
         return email;
