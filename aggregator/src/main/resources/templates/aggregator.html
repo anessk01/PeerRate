@@ -5,7 +5,10 @@
     <title>PeerRate | Aggregates</title>
 </head>
 <body>
-    These are the common themes in feedback you got!
+    These are the common themes in feedback you got!<br>
+    <div th:if="${showUpdated}">
+        <button onClick="window.location.href=window.location.href">Click for more up-to-date Aggregation!</button>
+   </div>
     <tr th:each="instance : ${results}">
         <td th:text="${instance.key}">keyvalue</td><br>
         <td th:text="${instance.value}">num</td><br>

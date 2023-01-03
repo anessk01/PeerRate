@@ -130,8 +130,8 @@ public class AggregatorController{
                     MessageTypeC requestAllOpinions = new MessageTypeC(null, currentUser);
                     jmsTemplate.convertAndSend(queue, requestAllOpinions);
 
-                    //consumer will handle the response
-                    model.addAttribute("results", aggregator.getResults());
+                    //consumer will handle the response.
+                    model.addAttribute("showUpdated", true);
                 }
                 else{
                     //if not, we simply display the previously stored data
