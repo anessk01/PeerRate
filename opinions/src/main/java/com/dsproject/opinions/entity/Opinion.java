@@ -2,6 +2,7 @@ package com.dsproject.opinions.entity;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -11,7 +12,9 @@ public class Opinion {
     private LocalDateTime timestamp;
     private String senderEmail;
     private String receiverEmail;
+    @Column(length = 7000)
     private String likes;
+    @Column(length = 7000)
     private String dislikes;
     private Boolean viewed;
 
