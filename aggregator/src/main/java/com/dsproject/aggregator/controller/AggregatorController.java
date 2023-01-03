@@ -38,11 +38,6 @@ public class AggregatorController{
 	@Autowired
 	Queue queue;
 
-    public void returnUnsuccesfulMessage(){
-        MessageTypeC errorMessage = new MessageTypeC(false, null);
-        jmsTemplate.convertAndSend(queue, errorMessage);
-    }
-
     public void returnSuccessMessage(){
         MessageTypeC successMessage = new MessageTypeC(true, null);
         jmsTemplate.convertAndSend(queue, successMessage);
@@ -57,7 +52,6 @@ public class AggregatorController{
             message = receivedConverted.getObject();
         } catch (JMSException e) {
             e.printStackTrace();
-            returnUnsuccesfulMessage();
             return;
         }
         if (message instanceof MessageTypeD) {
@@ -84,13 +78,32 @@ public class AggregatorController{
                 return;
             }
             else{
-                returnUnsuccesfulMessage();
-                return;
+                //await response from opinions microservice
+                Optional<Aggregator> optional = repository.findById(contents.receiverEmail);
+                if(optional.isPresent()){
+                    if(contents.allLikes != null){
+                        Aggregator aggregator = optional.get();
+                        //if valid, go ahead (aggregate)
+                        String combinedFeedback = "";
+                        for(int i = 0; i< contents.allLikes.size(); i++){
+                            combinedFeedback += contents.allLikes.get(i);
+                            combinedFeedback += contents.allDislikes.get(i);
+                        }
+                        System.out.println("RAKE will aggregate: " + combinedFeedback);
+                        API rakeAPI = new API();
+                        LinkedHashMap<String, Double> results = rakeAPI.extract(combinedFeedback); 
+                        aggregator.setReaggregate(false);
+                        aggregator.setResults(results);
+                        repository.save(aggregator);
+                    }
+                    else{
+                        return;
+                    }
+                }
             }
         }
         else{
             System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
-            returnUnsuccesfulMessage();
         }
     }
 
@@ -117,33 +130,8 @@ public class AggregatorController{
                     MessageTypeC requestAllOpinions = new MessageTypeC(null, currentUser);
                     jmsTemplate.convertAndSend(queue, requestAllOpinions);
 
-                    //await response from opinions microservice
-                    Object message = jmsTemplate.receiveAndConvert("queueD");
-                    if (message instanceof MessageTypeD) {
-                        MessageTypeD contents = (MessageTypeD) message;
-                        if(contents.allLikes != null){
-                            //if valid, go ahead (aggregate)
-                            String combinedFeedback = "";
-                            for(int i = 0; i< contents.allLikes.size(); i++){
-                                combinedFeedback += contents.allLikes.get(i);
-                                combinedFeedback += contents.allDislikes.get(i);
-                            }
-                            System.out.println("RAKE will aggregate: " + combinedFeedback);
-                            API rakeAPI = new API();
-                            LinkedHashMap<String, Double> results = rakeAPI.extract(combinedFeedback); 
-                            aggregator.setReaggregate(false);
-                            aggregator.setResults(results);
-                            repository.save(aggregator);
-                            model.addAttribute("results", results);
-                        }
-                        else{
-                            return "error";
-                        }
-                    }
-                    else{
-                        System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
-                        return "error";
-                    }
+                    //consumer will handle the response
+                    model.addAttribute("results", aggregator.getResults());
                 }
                 else{
                     //if not, we simply display the previously stored data

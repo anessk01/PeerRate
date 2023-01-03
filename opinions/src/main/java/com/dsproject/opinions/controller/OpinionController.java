@@ -206,21 +206,23 @@ public class OpinionController {
                             //also, trigger the aggregator service to set the reaggregate flag to true
                             //as this newly viewed opinion should also be taken into account now
                             MessageTypeD messageTypeD = new MessageTypeD(null, null, true, currentUser);
+                            System.out.println("sending: " + messageTypeD.receiverEmail + ", " + messageTypeD.reaggregate);
                             jmsTemplate.convertAndSend(queueD, messageTypeD);
 
-                            //await response to ensure aggregator service is on the same page
-                            Object aggregatorResponse = jmsTemplate.receiveAndConvert("queueC");
-                            if (aggregatorResponse instanceof MessageTypeC) {
-                                MessageTypeC aggregatorResponseContents = (MessageTypeC) aggregatorResponse;
-                                //if the aggregator could not make sense of the sent message
-                                if(!aggregatorResponseContents.aggregate){
-                                    return "error";
-                                }
-                            }
-                            else{
-                                System.out.println("Unknown message type: " + aggregatorResponse.getClass().getCanonicalName());
-                                return "error";
-                            }
+                            // //await response to ensure aggregator service is on the same page
+                            // Object aggregatorResponse = jmsTemplate.receiveAndConvert("queueC");
+                            // if (aggregatorResponse instanceof MessageTypeC) {
+                            //     MessageTypeC aggregatorResponseContents = (MessageTypeC) aggregatorResponse;
+                            //     //if the aggregator could not make sense of the sent message
+                            //     if(!aggregatorResponseContents.aggregate){
+                            //         System.out.println("Aggregator cannot parse");
+                            //         return "error";
+                            //     }
+                            // }
+                            // else{
+                            //     System.out.println("Unknown message type: " + aggregatorResponse.getClass().getCanonicalName());
+                            //     return "error";
+                            // }
 
                             //if all is well, show post and mark it as viewed. save to repo.
                             repository.save(opinion);
@@ -309,11 +311,6 @@ public class OpinionController {
         return "success";
     }
 
-    public void returnUnsuccesfulMessage(){
-        MessageTypeD errorMessage = new MessageTypeD(null, null, null, null);
-        jmsTemplate.convertAndSend(queueD, errorMessage);
-    }
-
     @JmsListener(destination = "queueC")
     public void consume(Object received) throws JmsException{
         //should ideally be handled using threads, but JPA is not thread safe.
@@ -323,7 +320,6 @@ public class OpinionController {
             message = receivedConverted.getObject();
         } catch (JMSException e) {
             e.printStackTrace();
-            returnUnsuccesfulMessage();
             return;
         }
         if (message instanceof MessageTypeC) {
@@ -334,18 +330,17 @@ public class OpinionController {
             if(optional.isPresent()){
                 ArrayList<String> likes = optional.get();
                 ArrayList<String> dislikes = repository.findViewedDislikesByReceiverEmail(contents.receiverEmail, true).get();
+                System.out.println("CALLED");
                 MessageTypeD messageTypeD = new MessageTypeD(likes, dislikes, false, contents.receiverEmail);
                 jmsTemplate.convertAndSend(queueD, messageTypeD);
             }
             else{
                 System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
-                returnUnsuccesfulMessage();
                 return;
             }
         }
         else{
             System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
-            returnUnsuccesfulMessage();
             return;
         }
     }
