@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PeerRate | What People Said</title>
+</head>
+<body>
+    Someone said this about you!
+      <p>What three things impressed you when working with me?</p>
+      <br> <div th:text="${opinion.likes}"></div><br>
+      <p>What three things can I improve?</p>
+      <br> <div th:text="${opinion.dislikes}"></div><br>
+      <a href="/opinions/dashboard">Go Back to Dashboard</a>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Update</title>
+</head>
+<body>
+<form action="/opinions/update" method="post">
+  Signed in: <span th:text="${session.username}"></span>, editing their review of <span th:text="${receiverEmail}"></span><br>
+  <input type="text" style="display:none" name="timestamp" th:value="${timestamp}">
+  <p>What three things impressed you?</p>
+  <br> <textarea name="likes">[[${oldLikes}]]</textarea><br>
+  <p>What three things can be improved?</p>
+  <br> <textarea name="dislikes">[[${oldDislikes}]]</textarea>
+  <p><input type="submit" value="Update Peer Review"></p>
+</form>
+</body>
+</html>

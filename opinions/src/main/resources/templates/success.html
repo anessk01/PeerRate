@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Success!</title>
+</head>
+<body>
+    Signed in: <span th:text="${session.username}"></span><br>
+    Success! <a href="/opinions/dashboard">Go to Dashboard</a><br>
+    <a href="/accounts/logout">Log Out</a>
+
+</body>
+</html>

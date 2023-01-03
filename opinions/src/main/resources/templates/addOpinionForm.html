@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Rate a Peer!</title>
+</head>
+<body>
+  <form action="/opinions/add" method="post">
+      <p>You are Reviewing: <span th:text="${receiverName}"></span></p><br>
+      <p><input style="display:none" type="text" name="receiverEmail" th:value="${receiverEmail}"></p>
+      <p>What three things impressed you when working with <span th:text="${receiverName}"></span>?</p>
+      <br> <textarea name="likes"></textarea><br>
+      <p>What three things can <span th:text="${receiverName}"></span> improve?</p>
+      <br> <textarea name="dislikes"></textarea>
+      <p><input type="submit" value="Submit Peer Review"></p>
+  </form>
+</body>
+</html>
