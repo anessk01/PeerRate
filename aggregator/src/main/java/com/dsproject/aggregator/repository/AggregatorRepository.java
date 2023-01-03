@@ -11,5 +11,5 @@ import java.util.Optional;
 
 @Repository
 public interface AggregatorRepository extends JpaRepository<Aggregator, String> {
-   
+    Optional<Aggregator> findById(String email);
 }

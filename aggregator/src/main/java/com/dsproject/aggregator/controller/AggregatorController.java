@@ -32,8 +32,8 @@ public class AggregatorController{
     String loginUrl = "redirect:" + gatewayUrl + "/accounts/login";
     
 
-    // @Autowired
-    // private AggregatorRepository repository;
+    @Autowired
+    private AggregatorRepository repository;
 
     @Autowired
 	JmsTemplate jmsTemplate;
@@ -141,6 +141,11 @@ public class AggregatorController{
     public String aggregator(Model model) {
         API rakeAPI = new API();
         LinkedHashMap<String, Double> results = rakeAPI.extract("This is a test input to see if the entire flow works or is utter crap"); 
+        Aggregator aggregator = new Aggregator();
+        aggregator.setEmail("stub");
+        aggregator.setReaggregate(false);
+        aggregator.setResults(results);
+        repository.save(aggregator);
         model.addAttribute("results", results);
         return "aggregator";
     }

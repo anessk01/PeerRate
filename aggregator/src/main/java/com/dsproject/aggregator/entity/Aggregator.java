@@ -21,12 +21,19 @@ public class Aggregator {
     public void setEmail(String email) {
         this.email = email;
     }
-
+    
     public Boolean getReaggregate(){
         return reaggregate;
     }
-
+    
     public void setReaggregate(Boolean reaggregate){
         this.reaggregate = reaggregate;
+    }
+    public LinkedHashMap<String, Double> getResults(){
+        return results;
+    }
+    
+    public void setResults(LinkedHashMap<String, Double> results){
+        this.results = results;
     }
 }
