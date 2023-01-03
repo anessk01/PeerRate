@@ -18,6 +18,12 @@ public interface OpinionRepository extends JpaRepository<Opinion, String> {
     @Query("SELECT o FROM Opinion o where o.receiverEmail = :email AND viewed = :viewed") 
     ArrayList<Opinion> findOpinionByReceiverEmailViewed(String email, boolean viewed);
 
+    @Query("SELECT o.likes FROM Opinion o where o.receiverEmail = :email AND viewed = :viewed") 
+    ArrayList<String> findViewedLikesByReceiverEmail(String email, boolean viewed);
+
+    @Query("SELECT o.dislikes FROM Opinion o where o.receiverEmail = :email AND viewed = :viewed") 
+    ArrayList<String> findViewedDislikesByReceiverEmail(String email, boolean viewed);
+
     @Query("SELECT o FROM Opinion o where o.senderEmail = :email") 
     ArrayList<Opinion> findOpinionBySenderEmail(String email);
 

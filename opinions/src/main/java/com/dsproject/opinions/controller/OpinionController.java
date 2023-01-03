@@ -1,11 +1,11 @@
 package com.dsproject.opinions.controller;
 
-import com.dsproject.core.MessageTypeA;
-import com.dsproject.core.MessageTypeB;
+import com.dsproject.core.*;
 import com.dsproject.opinions.entity.Opinion;
 import com.dsproject.opinions.repository.OpinionRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
@@ -33,7 +33,12 @@ public class OpinionController {
 	JmsTemplate jmsTemplate;
 	
 	@Autowired
-	Queue queue;
+    @Qualifier("queueA")
+	Queue queueA;
+
+	@Autowired
+    @Qualifier("queueD")
+	Queue queueD;
 
     @GetMapping("/opinions/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -51,7 +56,7 @@ public class OpinionController {
         
         //(JMS): await notifications to be fetched from accounts service
         MessageTypeA messageTypeA = new MessageTypeA(currentUser, null, "fetch");
-        jmsTemplate.convertAndSend(queue, messageTypeA);
+        jmsTemplate.convertAndSend(queueA, messageTypeA);
 
         //await response from accounts microservice
         Object message = jmsTemplate.receiveAndConvert("queueB");
@@ -133,7 +138,7 @@ public class OpinionController {
         
         //if not, make sure that the receiver email is a valid user and increment credits
         MessageTypeA messageTypeA = new MessageTypeA(currentUser, receiverEmail, "increment");
-        jmsTemplate.convertAndSend(queue, messageTypeA);
+        jmsTemplate.convertAndSend(queueA, messageTypeA);
         
         //await response from accounts microservice
         Object message = jmsTemplate.receiveAndConvert("queueB");
@@ -186,16 +191,36 @@ public class OpinionController {
                 }
                 else{
                     //if not, check if the user has enough credits (JMS) and deduct automatically on accounts service if they do
-                    //if true returned, show post and mark it as viewed. save to repo.
                     MessageTypeA messageTypeA = new MessageTypeA(opinion.getSenderEmail(), currentUser, "decrement");
-		            jmsTemplate.convertAndSend(queue, messageTypeA);
-
+		            jmsTemplate.convertAndSend(queueA, messageTypeA);
+                    
                     //await response from accounts microservice
                     Object message = jmsTemplate.receiveAndConvert("queueB");
                     if (message instanceof MessageTypeB) {
                         MessageTypeB contents = (MessageTypeB) message;
                         if(contents.allowed){
                             opinion.setViewed(true);
+
+                            //also, trigger the aggregator service to set the reaggregate flag to true
+                            //as this newly viewed opinion should also be taken into account now
+                            MessageTypeD messageTypeD = new MessageTypeD(null, null, true, currentUser);
+                            jmsTemplate.convertAndSend(queueD, messageTypeD);
+
+                            //await response to ensure aggregator service is on the same page
+                            Object aggregatorResponse = jmsTemplate.receiveAndConvert("queueC");
+                            if (aggregatorResponse instanceof MessageTypeC) {
+                                MessageTypeC aggregatorResponseContents = (MessageTypeC) aggregatorResponse;
+                                //if the aggregator could not make sense of the sent message
+                                if(!aggregatorResponseContents.aggregate){
+                                    return "error";
+                                }
+                            }
+                            else{
+                                System.out.println("Unknown message type: " + aggregatorResponse.getClass().getCanonicalName());
+                                return "error";
+                            }
+
+                            //if all is well, show post and mark it as viewed. save to repo.
                             repository.save(opinion);
                             model.addAttribute("opinion", opinion);
                             return "expandedOpinion";

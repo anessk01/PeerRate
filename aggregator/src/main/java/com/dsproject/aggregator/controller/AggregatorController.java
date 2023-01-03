@@ -41,101 +41,61 @@ public class AggregatorController{
 	@Autowired
 	Queue queue;
 
+    public void returnUnsuccesfulMessage(){
+        MessageTypeC errorMessage = new MessageTypeC(false, null);
+        jmsTemplate.convertAndSend(queue, errorMessage);
+    }
 
-    // @JmsListener(destination = "queueA")
-    // public void consume(Object received) throws JmsException{
-    //     //should ideally be handled using threads, but JPA is not thread safe.
-    //     ActiveMQObjectMessage receivedConverted = (ActiveMQObjectMessage) received;
-    //     Object message;
-    //     try {
-    //         message = receivedConverted.getObject();
-    //     } catch (JMSException e) {
-    //         e.printStackTrace();
-    //         returnUnsuccesfulMessage();
-    //         return;
-    //     }
-    //     if (message instanceof MessageTypeA) {
-    //         MessageTypeA contents = (MessageTypeA) message;
-    //         if(contents.type.equals("increment")){
-    //             //the user has just tried to add a review. opinions service will await accounts' response to confirm information consistency.
-    //             //on accounts microservice, we validate recepient email
-    //             if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
-    //                 //we increment sender user credits
-    //                 Account senderAccount = repository.findById(contents.senderEmail).get();
-    //                 Account receiverAccount = repository.findById(contents.receiverEmail).get();
-    //                 senderAccount.setCredits(senderAccount.getCredits() + 1);
+    public void returnSuccessMessage(){
+        MessageTypeC successMessage = new MessageTypeC(true, null);
+        jmsTemplate.convertAndSend(queue, successMessage);
+    }
 
-    //                 LinkedList<String> notificationsSender = senderAccount.getNotifications();
-    //                 if(notificationsSender == null){
-    //                     notificationsSender = new LinkedList<String>();
-    //                 }
-    //                 //we add a notification to sender that they have a new credit
-    //                 senderAccount.setNotifications(NotificationManager.addNotification(notifNewCredit, notificationsSender));
-
-    //                 LinkedList<String> notificationsReceiver = receiverAccount.getNotifications();
-    //                 if(notificationsReceiver == null){
-    //                     notificationsReceiver = new LinkedList<String>();
-    //                 }
-    //                 //we add a notification to receiver that they have been reviewed
-    //                 receiverAccount.setNotifications(NotificationManager.addNotification(notifNewReview, notificationsReceiver));
-    //                 repository.save(senderAccount);
-    //                 repository.save(receiverAccount);
-    //                 returnSuccessMessage();
-    //             }
-    //             else{
-    //                 System.out.println("failed: fake receiver or sender");
-    //                 returnUnsuccesfulMessage();
-    //             }
-    //         }
-    //         else if(contents.type.equals("decrement")){
-    //             //the user has just attempted to read a review they hadn't read before. opinions service depends on response to either show opinion or not.
-    //             //we check that they have enough credits (1 or more)
-    //             if(repository.findById(contents.receiverEmail).isPresent() && repository.findById(contents.senderEmail).isPresent()){
-    //                 //if so, allowed is true, and we reduce credits by 1
-    //                 Account receiverAccount = repository.findById(contents.receiverEmail).get();
-    //                 if(receiverAccount.getCredits() > 0){
-    //                     receiverAccount.setCredits(receiverAccount.getCredits() - 1);
-
-    //                     LinkedList<String> notificationsReceiver = receiverAccount.getNotifications();
-    //                     if(notificationsReceiver == null){
-    //                         notificationsReceiver = new LinkedList<String>();
-    //                     }
-    //                     //we add a notification to reader informing of the consumption of a credit
-    //                     receiverAccount.setNotifications(NotificationManager.addNotification(notifLessCredit(receiverAccount.getCredits()), notificationsReceiver));
-                        
-    //                     repository.save(receiverAccount);
-    //                     //we inform opinions service to go ahead
-    //                     returnSuccessMessage();
-    //                 }
-    //                 else{
-    //                     System.out.println("failed: not enough credits");
-    //                     returnUnsuccesfulMessage();
-    //                 }
-    //             }
-    //             else{
-    //                 //otherwise it is false
-    //                 System.out.println("failed: fake receiver or sender");
-    //                 returnUnsuccesfulMessage();
-    //             }
-    //         }
-    //         else if(contents.type.equals("fetch")){
-    //             //the user has opened the dashboard
-    //             //we return their current notifications
-    //             //we tell them how many credits they have
-    //             Account senderAccount = repository.findById(contents.senderEmail).get();
-    //             MessageTypeB successMessage = new MessageTypeB(true, true, senderAccount.getNotifications(), senderAccount.getCredits());
-    //             jmsTemplate.convertAndSend(queue, successMessage);
-    //         }
-    //         else{
-    //             System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
-    //             returnUnsuccesfulMessage();
-    //         }
-    //     }
-    //     else{
-    //         System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
-    //         returnUnsuccesfulMessage();
-    //     }
-    // }
+    @JmsListener(destination = "queueD")
+    public void consume(Object received) throws JmsException{
+        //should ideally be handled using threads, but JPA is not thread safe.
+        ActiveMQObjectMessage receivedConverted = (ActiveMQObjectMessage) received;
+        Object message;
+        try {
+            message = receivedConverted.getObject();
+        } catch (JMSException e) {
+            e.printStackTrace();
+            returnUnsuccesfulMessage();
+            return;
+        }
+        if (message instanceof MessageTypeD) {
+            MessageTypeD contents = (MessageTypeD) message;
+            if(contents.reaggregate == true){
+                //scenario alpha: user has just read a new piece of feedback, we mark 
+                //the reaggregate flag as true for this user, so that the aggregation 
+                //is performed again when requested next time, instead of simply displaying
+                //the results from the previous aggregation
+                Optional<Aggregator> optional = repository.findById(contents.receiverEmail);
+                if (optional.isPresent()) {
+                    Aggregator aggregator = optional.get();
+                    aggregator.setReaggregate(true);
+                    repository.save(aggregator);
+                }
+                else{
+                    Aggregator aggregator = new Aggregator();
+                    aggregator.setEmail(contents.receiverEmail);
+                    aggregator.setReaggregate(true);
+                    aggregator.setResults(new LinkedHashMap<String, Double>());
+                    repository.save(aggregator);
+                }
+                returnSuccessMessage();
+                return;
+            }
+            else{
+                returnUnsuccesfulMessage();
+                return;
+            }
+        }
+        else{
+            System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+            returnUnsuccesfulMessage();
+        }
+    }
 
     @GetMapping("/aggregator")
     public String aggregator(Model model) {

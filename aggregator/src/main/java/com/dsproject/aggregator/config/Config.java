@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
-import java.util.Arrays;
-
 import javax.jms.Queue;
 import org.springframework.jms.core.JmsTemplate;
 

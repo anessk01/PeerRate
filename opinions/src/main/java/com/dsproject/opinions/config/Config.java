@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
-import java.util.Arrays;
-
 import javax.jms.Queue;
 import org.springframework.jms.core.JmsTemplate;
 
@@ -14,8 +12,13 @@ import org.springframework.jms.core.JmsTemplate;
 public class Config {
     
     @Bean
-    public Queue queue(){
+    public Queue queueA(){
         return new ActiveMQQueue("queueA");
+    }
+
+    @Bean
+    public Queue queueD(){
+        return new ActiveMQQueue("queueD");
     }
 
     @Bean
