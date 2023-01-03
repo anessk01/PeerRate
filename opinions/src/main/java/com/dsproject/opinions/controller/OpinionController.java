@@ -4,9 +4,12 @@ import com.dsproject.core.*;
 import com.dsproject.opinions.entity.Opinion;
 import com.dsproject.opinions.repository.OpinionRepository;
 
+import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.jms.JmsException;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Optional;
 
+import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.servlet.http.HttpSession;
 
@@ -146,7 +150,6 @@ public class OpinionController {
             MessageTypeB contents = (MessageTypeB) message;
             if(contents.allowed){
                 //if valid, go ahead (save to repo)
-                model.addAttribute("temp", repository.checkIfReviewed(receiverEmail, currentUser).size());
                 Opinion opinion = new Opinion();
                 opinion.setTimestamp(timestamp);
                 opinion.setSenderEmail(currentUser);
@@ -155,7 +158,6 @@ public class OpinionController {
                 opinion.setDislikes(dislikes);
                 opinion.setViewed(false);
                 repository.save(opinion);
-                model.addAttribute("temp1", repository.checkIfReviewed(receiverEmail, currentUser).size());
                 return "success";
             }
             else{
@@ -305,5 +307,46 @@ public class OpinionController {
             return "invalidPost";
         }
         return "success";
+    }
+
+    public void returnUnsuccesfulMessage(){
+        MessageTypeD errorMessage = new MessageTypeD(null, null, null, null);
+        jmsTemplate.convertAndSend(queueD, errorMessage);
+    }
+
+    @JmsListener(destination = "queueC")
+    public void consume(Object received) throws JmsException{
+        //should ideally be handled using threads, but JPA is not thread safe.
+        ActiveMQObjectMessage receivedConverted = (ActiveMQObjectMessage) received;
+        Object message;
+        try {
+            message = receivedConverted.getObject();
+        } catch (JMSException e) {
+            e.printStackTrace();
+            returnUnsuccesfulMessage();
+            return;
+        }
+        if (message instanceof MessageTypeC) {
+            MessageTypeC contents = (MessageTypeC) message;
+            //scenario beta: the aggregator service is looking to aggregate the opinions of a user
+            //opinions service returns all the opinions where this user is the receiver
+            Optional<ArrayList<String>> optional = repository.findViewedLikesByReceiverEmail(contents.receiverEmail, true);
+            if(optional.isPresent()){
+                ArrayList<String> likes = optional.get();
+                ArrayList<String> dislikes = repository.findViewedDislikesByReceiverEmail(contents.receiverEmail, true).get();
+                MessageTypeD messageTypeD = new MessageTypeD(likes, dislikes, false, contents.receiverEmail);
+                jmsTemplate.convertAndSend(queueD, messageTypeD);
+            }
+            else{
+                System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+                returnUnsuccesfulMessage();
+                return;
+            }
+        }
+        else{
+            System.out.println("Unknown message type: " + message.getClass().getCanonicalName());
+            returnUnsuccesfulMessage();
+            return;
+        }
     }
 }
