@@ -15,6 +15,10 @@ spring:
          uri: lb://OPINIONS
          predicates:
            - Path=/opinions/**
+       - id: aggregator
+         uri: lb://AGGREGATOR
+         predicates:
+           - Path=/aggregator/**
 
 eureka:
   client: 

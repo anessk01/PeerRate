@@ -5,7 +5,6 @@ import com.dsproject.core.MessageTypeB;
 import com.dsproject.opinions.entity.Opinion;
 import com.dsproject.opinions.repository.OpinionRepository;
 
-import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.jms.core.JmsTemplate;

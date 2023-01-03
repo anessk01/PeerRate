@@ -153,9 +153,6 @@ public class AccountController{
 
     @GetMapping("/accounts")
     public String homePage() {
-        MessageTypeA messageTypeA = new MessageTypeA("sender", "receiver", "increment");
-		jmsTemplate.convertAndSend(queue, messageTypeA);
-        System.out.println("sent");
         return "home";
     }
 

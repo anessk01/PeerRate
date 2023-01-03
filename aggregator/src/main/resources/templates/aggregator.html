@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PeerRate | Aggregates</title>
+</head>
+<body>
+    These are the common themes in feedback you got!
+    <tr th:each="instance : ${results}">
+        <td th:text="${instance.key}">keyvalue</td>
+        <td th:text="${instance.value}">num</td>
+    </tr>
+</body>
+</html>
