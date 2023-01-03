@@ -26,7 +26,7 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class AccountController{
-    String gatewayUrl = "http://localhost:8000";
+    String gatewayUrl = "http://host.docker.internal:8000";
     String dashUrl = "redirect:" + gatewayUrl + "/opinions/dashboard";
     final String notifNewCredit = "You have a new credit because of your latest review! Check it out!";
     final String notifNewReview = "Someone has reviewed you! Check it out!";

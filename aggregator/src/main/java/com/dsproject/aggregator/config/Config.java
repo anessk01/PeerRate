@@ -19,7 +19,7 @@ public class Config {
     @Bean
     public ActiveMQConnectionFactory activeMQConnectionFactory(){
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory();
-        factory.setBrokerURL("tcp://localhost:61616");
+        factory.setBrokerURL("tcp://host.docker.internal:61616");
         factory.setTrustAllPackages(true);
         return factory;
     }

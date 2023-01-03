@@ -27,7 +27,7 @@ import javax.servlet.http.HttpSession;
 
 @Controller
 public class OpinionController {
-    String gatewayUrl = "http://localhost:8000";
+    String gatewayUrl = "http://host.docker.internal:8000";
     String loginUrl = "redirect:" + gatewayUrl + "/accounts/login";
 
     @Autowired
