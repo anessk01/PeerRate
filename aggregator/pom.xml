@@ -65,10 +65,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-activemq</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>com.linguistic</groupId>
-            <artifactId>rake</artifactId>
-            <version>0.0.1</version>
+         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
         </dependency>
     </dependencies>
     <dependencyManagement>

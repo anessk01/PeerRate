@@ -1,4 +1,4 @@
-package com.linguistic.rake;
+package com.dsproject.aggregator.helpers;
 
 public class RakeLanguages {
     static String ARABIC = "ar";

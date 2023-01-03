@@ -1,4 +1,4 @@
-package com.linguistic.rake;
+package com.dsproject.aggregator.helpers;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,7 +25,7 @@ public class Rake {
         this.language = language;
 
         // Read the stop words file for the given language
-        InputStream stream = this.getClass().getResourceAsStream("en.txt");
+        InputStream stream = this.getClass().getResourceAsStream("/en.txt");
         String line;
 
         if (stream != null) {

@@ -1,4 +1,4 @@
-package com.linguistic.rake;
+package com.dsproject.aggregator.helpers;
 
 import java.util.LinkedHashMap;
 

@@ -3,9 +3,9 @@ package com.dsproject.aggregator.controller;
 import com.dsproject.core.MessageTypeC;
 import com.dsproject.core.MessageTypeD;
 import com.dsproject.aggregator.entity.Aggregator;
+import com.dsproject.aggregator.helpers.API;
 import com.dsproject.aggregator.repository.AggregatorRepository;
 
-import com.linguistic.rake.API;
 
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +32,8 @@ public class AggregatorController{
     String loginUrl = "redirect:" + gatewayUrl + "/accounts/login";
     
 
-    @Autowired
-    private AggregatorRepository repository;
+    // @Autowired
+    // private AggregatorRepository repository;
 
     @Autowired
 	JmsTemplate jmsTemplate;
@@ -138,10 +138,10 @@ public class AggregatorController{
     // }
 
     @GetMapping("/aggregator")
-    public String homePage(Model model) {
+    public String aggregator(Model model) {
         API rakeAPI = new API();
         LinkedHashMap<String, Double> results = rakeAPI.extract("This is a test input to see if the entire flow works or is utter crap"); 
         model.addAttribute("results", results);
-        return "home";
+        return "aggregator";
     }
 }
