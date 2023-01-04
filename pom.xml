@@ -1,0 +1,16 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>peer-rate</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>accounts</module>
+        <module>aggregator</module>
+        <module>core</module>
+        <module>eureka</module>
+        <module>gateway</module>
+        <module>opinions</module>
+    </modules>
+</project>
