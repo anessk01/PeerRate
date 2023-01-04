@@ -1,6 +1,8 @@
 # Rate Your Peer (PeerRate)
 
-This code runs the PeerRate platform
+This code runs the PeerRate platform. PeerRate is a platform where coworkers can give each other
+honest, positive and constructive anonymised feedback. The catch: to read reviews that I get from others,
+I must review others first 1:1!
 
 To run this code, simply run the following commands in the root directory:
 1. mvn clean package -DskipTests

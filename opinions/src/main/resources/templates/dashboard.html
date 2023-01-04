@@ -14,7 +14,7 @@
     <div class="underLineText">
         <a href="/opinions/dashboard">Dashboard</a>
         <span th:text="${session.username}"></span>
-        Credits: <span th:text="${credits}"></span>
+        <span th:text="'Credits:' + ${credits}"></span>
         <a href="/accounts/logout">Log Out</a>
     </div> 
   </div>
@@ -26,7 +26,7 @@
     <div class="boxed3">
         Notifications:
      <tr th:each="data, iterstat: ${notifications}">
-        <span> > </span><div th:text="${notifications[iterstat.index]}"></div>
+        <div th:text="'>' + ${notifications[iterstat.index]}"></div>
     </tr>
     </div><br><br>
     <form action="/accounts/search" method="GET">
@@ -45,6 +45,7 @@
             <input type="submit" value="Edit Review">
         </form><br>
     </tr>
+    <br><br>
     <br><br>Unread Reviews of You:
     <tr th:each="data, iterstat: ${opinionsOfUserNotViewed}">
         <form class="boxed2" action="/opinions/get", method="get">
@@ -54,6 +55,7 @@
             <input type="submit" value="See What They Think of You!">
         </form><br>
     </tr>
+    <br><br>
     <br><br>Reviews of You that You Already Saw:
     <tr th:each="data, iterstat: ${opinionsOfUserViewed}">
         <form class="boxed2" action="/opinions/get", method="get">
