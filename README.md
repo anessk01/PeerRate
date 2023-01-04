@@ -15,4 +15,4 @@ To run this code, simply run the following commands in the root directory:
 
 Link to report: https://gitlab.com/comp30220/2022/rate-your-peer/-/blob/main/PeerRate%20Report.pdf
 
-Link to video:
+Link to video: https://gitlab.com/comp30220/2022/rate-your-peer/-/blob/main/PeerRate%20Video.mp4
