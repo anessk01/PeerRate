@@ -2,45 +2,67 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>PeerRate | Dash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link th:href="@{/main.css}" rel="stylesheet" />
+    <title>Dashboard</title>
 </head>
 <body>
-    Signed in: <span th:text="${session.username}"></span>, Credits: <span th:text="${credits}"></span>
-    <a href="/accounts/logout">Log Out</a><br>
+  <div class="mainTop forceCenter">
+   <img src="https://i.postimg.cc/MHhmh3JB/logo.png" class="mainLogo">
+  </div>
+  <div class="underLine forceCenter">
+    <div class="underLineText">
+        <a href="/opinions/dashboard">Dashboard</a>
+        <span th:text="${session.username}"></span>
+        Credits: <span th:text="${credits}"></span>
+        <a href="/accounts/logout">Log Out</a>
+    </div> 
+  </div>
+  <div class="forceCenter">
+    <div class="mainContainer">
+      <div class="forceCenter">
+    <br><a href="/aggregator">View Summary of What People Said About You</a><br>
+    </div>
+    <div class="boxed3">
+        Notifications:
+     <tr th:each="data, iterstat: ${notifications}">
+        <span> > </span><div th:text="${notifications[iterstat.index]}"></div>
+    </tr>
+    </div><br><br>
     <form action="/accounts/search" method="GET">
+      <div class="subContainer">
         <p>Search for Peers by their Company:</p>
-        <br> <input type="text" name="company" placeholder="Eg: Microsoft"> <input type="submit" value="Search"></p>
+        <input type="text" name="company" placeholder="Eg: Microsoft"> 
+        <input type="submit" value="Search">
+        </div>
     </form>
     <br><br>Your Reviews of Others:
     <tr th:each="data, iterstat: ${opinionsByUser}">
-        <form action="/opinions/updateForm", method="get">
+        <form class="boxed2" action="/opinions/updateForm", method="get">
             <div th:text="'Your Review of: ' + ${opinionsByUser[iterstat.index].receiverEmail}"></div>
             <input type="text" style="display:none" name="timestamp" th:value="${opinionsByUser[iterstat.index].timestamp}">
             <div th:text="${opinionsByUser[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsByUser[iterstat.index].likes.length()))} + '...'"></div>
-            <input type="submit" value="Edit Review"></td>
+            <input type="submit" value="Edit Review">
         </form><br>
     </tr>
     <br><br>Unread Reviews of You:
     <tr th:each="data, iterstat: ${opinionsOfUserNotViewed}">
-        <form action="/opinions/get", method="get">
+        <form class="boxed2" action="/opinions/get", method="get">
             <div>Someone Said this About You:</div>
             <input type="text" style="display:none" name="timestamp" th:value="${opinionsOfUserNotViewed[iterstat.index].timestamp}">
             <div th:text="${opinionsOfUserNotViewed[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsOfUserNotViewed[iterstat.index].likes.length()))} + '...'"></div>
-            <input type="submit" value="See What They Think of You!"></td>
+            <input type="submit" value="See What They Think of You!">
         </form><br>
     </tr>
     <br><br>Reviews of You that You Already Saw:
     <tr th:each="data, iterstat: ${opinionsOfUserViewed}">
-        <form action="/opinions/get", method="get">
+        <form class="boxed2" action="/opinions/get", method="get">
             <input type="text" style="display:none" name="timestamp" th:value="${opinionsOfUserViewed[iterstat.index].timestamp}">
             <div th:text="${opinionsOfUserViewed[iterstat.index].likes.substring(0, T(java.lang.Math).min(15, opinionsOfUserViewed[iterstat.index].likes.length()))} + '...'"></div>
-            <input type="submit" value="Re-read Review"></td>
+            <input type="submit" value="Re-read Review">
         </form><br>
     </tr>
-    <br><br>Notifications:
-    <tr th:each="data, iterstat: ${notifications}">
-        <div th:text="${notifications[iterstat.index]}"></div>
-    </tr>
-    <br><a href="/aggregator">View Summary of What People Said About You</a><br>
+    </div>
+  </div>
 </body>
 </html>

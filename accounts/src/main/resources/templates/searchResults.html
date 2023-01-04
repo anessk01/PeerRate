@@ -1,17 +1,35 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head> 
-    <title>Search Results</title> 
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link th:href="@{/main.css}" rel="stylesheet" />
+    <title>Search Results</title>
 </head>
 <body>
-    Signed in: <span th:text="${session.username}"></span>
-    <tr th:each="data, iterstat: ${searchResults}">
+  <div class="mainTop forceCenter">
+   <img src="https://i.postimg.cc/MHhmh3JB/logo.png" class="mainLogo">
+  </div>
+  <div class="underLine forceCenter">
+   <div class="underLineText">
+        <a href="/opinions/dashboard">Dashboard</a>
+        <span th:text="${session.username}"></span>
+        <a href="/accounts/logout">Log Out</a>
+    </div>
+  </div>
+  <div class="forceCenter">
+    <div class="mainContainer">
+    <div class="subContainer">
+      <div class="spacer">Select one to Review:</div>
+       <tr th:each="data, iterstat: ${searchResults}">
         <form action="/opinions/addForm">
             <input style="display:none" type="text" name="receiverName" th:value="${searchResults[iterstat.index][0]}">
             <input style="display:none" name="receiverEmail" th:value="${searchResults[iterstat.index][1]}">
-            <input type="submit" th:value="'Review ' + ${searchResults[iterstat.index][0]}"></td>
+            <input type="submit" th:value="'Review ' + ${searchResults[iterstat.index][0]}">
         </form><br>
-    </tr>
+          </tr> 
+    </div>
+    </div>
+  </div>
 </body>
 </html>

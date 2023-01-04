@@ -2,12 +2,32 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link th:href="@{/main.css}" rel="stylesheet" />
+
+    <title>Your Account</title>
 </head>
 <body>
-    Welcome:<span th:text="${name}"></span><br>
-    Your E-mail:<span th:text="${email}"></span><br>
-    Your Credits:<span th:text="${credits}"></span><br>
-    Your Latest Left Company:<span th:text="${company}"></span><br>
+  <div class="mainTop forceCenter">
+   <img src="https://i.postimg.cc/MHhmh3JB/logo.png" class="mainLogo">
+  </div>
+  <div class="underLine forceCenter">
+     <div class="underLineText">
+        <a href="/opinions/dashboard">Dashboard</a>
+        <span th:text="${session.username}"></span>
+        <a href="/accounts/logout">Log Out</a>
+    </div> 
+  </div>
+  <div class="forceCenter">
+    <div class="mainContainer">
+        <div class="subContainer">
+          Welcome:<span th:text="${name}"></span><br>
+          Your E-mail:<span th:text="${email}"></span><br>
+          Your Credits:<span th:text="${credits}"></span><br>
+          Your Latest Left Company:<span th:text="${company}"></span><br>
+        </div>
+
+    </div>
+  </div>
 </body>
 </html>

@@ -1,0 +1,166 @@
+*{
+  font-family: 'Ubuntu', sans-serif;
+}
+body {
+  margin: 0;
+  padding: 0; 
+}
+
+input[type=text] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+input[type=submit] {
+  width: 20vw;
+  padding: 7px;
+  color: #ffffff;
+  background-color: #35b4cc;
+  border: 0;
+  border-radius: 7px;
+}
+
+input[type=submit]:hover {
+  cursor: pointer;
+}
+
+button {
+  width: 60vw;
+  padding: 7px;
+  color: #ffffff;
+  background-color: #35b4cc;
+  border: 0;
+  border-radius: 7px;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+.forceCenter{
+  display: flex;
+  justify-content: center;
+}
+
+.mainLogo{
+   width: 40vw;
+   height: auto;
+}
+
+.mainTop{
+  height: 20vh;
+  width: 100%;
+  background-color: #010403;
+}
+
+.underLine{
+  height: 7vh;
+  width: 100%;
+  background-color: #6a6edb;
+
+}
+
+.underLineText{
+  width: 80vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #00fabd;
+}
+
+a{
+  color: #00fabd;
+  font-size: 0.9em;
+}
+
+.spacer{
+  margin-bottom: 5vh;
+}
+
+.spacer2{
+  margin-top: 5vh;
+}
+
+.mainContainer{
+ width: 70vw;
+ margin-top: 5vh;
+}
+
+.subContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+textarea {
+  width: 100%;
+  height: 40vh;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  font-size: 16px;
+}
+
+.boxed{
+  background-color: #00fabd;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  color: white;
+  padding: 10px;
+  border-radius: 15px;
+  min-height: 15vh;
+}
+
+  .boxed2{
+  background-color: #00fabd;
+  width: 100%;
+  display: flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+  padding: 10px;
+  border-radius: 15px;
+  min-height: 15vh;
+  margin-top: 3vh;
+}
+.boxed3{
+  background-color: #a029eb;
+  width: 100%;
+  display: flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+  padding: 10px;
+  border-radius: 15px;
+  min-height: 15vh;
+  margin-top: 3vh;
+}
+
+.boxed4{
+  background-color: #a029eb;
+  width: 100%;
+  display: flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 10px;
+  border-radius: 15px;
+  min-height: 15vh;
+  margin-top: 3vh;
+}

@@ -2,16 +2,35 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>PeerRate | Aggregates</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link th:href="@{/main.css}" rel="stylesheet" />
+    <title>Summary Review</title>
 </head>
 <body>
-    These are the common themes in feedback you got!<br>
+  <div class="mainTop forceCenter">
+   <img src="https://i.postimg.cc/MHhmh3JB/logo.png" class="mainLogo">
+  </div>
+  <div class="underLine forceCenter">
+    <div class="underLineText">
+        <a href="/opinions/dashboard">Dashboard</a>
+        <span th:text="${session.username}"></span>
+        <a href="/accounts/logout">Log Out</a>
+    </div> 
+  </div>
+  <div class="forceCenter">
+    <div class="mainContainer">
+        <div class="subContainer">
+
+    <b>These are the common themes in feedback you got!</b><br><br>
     <div th:if="${showUpdated}">
         <button onClick="window.location.href=window.location.href">Click for more up-to-date Aggregation!</button>
    </div>
     <tr th:each="instance : ${results}">
-        <td th:text="${instance.key}">keyvalue</td><br>
-        <td th:text="${instance.value}">num</td><br>
+        <div class="boxed4" th:text="${instance.key}">keyvalue</div><br><br>
     </tr>
+    </div>
+  </div>
+  </div>
+
 </body>
 </html>

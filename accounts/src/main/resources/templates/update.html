@@ -1,16 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Update</title>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link th:href="@{/main.css}" rel="stylesheet" />
+    <title>PeerRate | Update</title>
 </head>
 <body>
-<form action="/accounts/update" method="post">
-  Signed in: <div th:text="${session.username}"></div>
-  <p>Password: <input type="text" name="password" th:value="${oldPassword}"></p>
-  <p>Company: <input type="text" name="company" th:value="${oldCompany}"></p>
-  <p>Name: <input type="text" name="name" th:value="${oldName}"></p>
-  <p><input type="submit" value="OK"></p>
-</form>
+  <div class="mainTop forceCenter">
+   <img src="https://i.postimg.cc/MHhmh3JB/logo.png" class="mainLogo">
+  </div>
+  <div class="underLine forceCenter">
+    <div class="underLineText">
+        <a href="/opinions/dashboard">Dashboard</a>
+        <span th:text="${session.username}"></span>
+        <a href="/accounts/logout">Log Out</a>
+    </div> 
+  </div>
+  <div class="forceCenter">
+    <div class="mainContainer">
+        <div class="subContainer">
+          Update Your Information:
+        </div>
+    <form action="/accounts/update" method="post">
+      <p>Password: <input type="text" name="password" th:value="${oldPassword}"></p>
+      <p>Company: <input type="text" name="company" th:value="${oldCompany}"></p>
+      <p>Name: <input type="text" name="name" th:value="${oldName}"></p>
+          <div class="subContainer">
+            <p><input type="submit" value="Update"></p>
+          </div>
+    </form>
+    </div>
+  </div>
 </body>
 </html>

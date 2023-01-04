@@ -2,11 +2,34 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Peer Rate | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link th:href="@{/main.css}" rel="stylesheet" />
+
+    <title>PeerRate | Home</title>
 </head>
 <body>
-  Welcome!
-  <a href="/accounts/login">Log In</a><br>
-  <a href="/accounts/signup">Sign Up</a>
+  <div class="mainTop forceCenter">
+   <img src="https://i.postimg.cc/MHhmh3JB/logo.png" class="mainLogo">
+  </div>
+  <div class="underLine forceCenter">
+   <div class="underLineText">
+        <a href="/accounts/login">Log In</a>
+        <a href="/accounts/signup">Sign Up</a>
+    </div> 
+  </div>
+  <div class="forceCenter">
+    <div class="mainContainer">
+    <b>What is PeerRate?</b><br><br>
+
+A shocking 65% of professionals are thought to be suffering from impostor syndrome in the workplace [1], a syndrome where the person constantly suffers from self-doubt and feels like they are far underqualified when compared to their peers [2]. It is thought that a significant contributor to this syndrome is lack of sufficient positive reinforcement from peers, making the individual feel as if they are looked down upon. <br><br>
+Additionally, the lack of knowing a person’s weak points means that the individual may struggle to understand where they need to improve, further leading the individual to feeling like an impostor.<br><br> 
+Both of these issues would be resolved if a system existed whereby peers are able to give honest feedback to one another – both positive to uplift them and constructively negative to point out where they need to improve. But how can I be honest with someone when my feedback of them can sever our relationship?<br><br>
+PeerRate is the answer. It is based on the concept of anonymised feedback, where any user can find another individual in their company or outside whom they know and help them on their journey towards self-perfection. As opposed to corporate feedback, this feedback is not a performance review, and will never be read by any manager or in any professional setting. It is solely meant to help peers identify their strong points that they should embellish, as well as their flaws which may be glaring to everyone around else but not to them.<br><br>
+But who would go through the effort of reviewing others? This is where the transactional element of PeerRate comes in. You are notified of when someone reviews you, but you are unable to read the review until you review someone else yourself. This helps ensure the natural exchange of reviews and ensures a system of giving is in place to allow for receiving. <br><br>
+PeerRate understands that in certain cases, people who review you may not have had the best impression, and that their feedback may be an outlier which should not really be relied on for self improvement. That’s why it includes an aggregation system whereby the most common themes from all the feedback obtained is shown to the user. This helps reduce the outliers and gives users reliable pointers to work off. 
+PeerRate is based on a culture of improving oneself whilst uplifting others, being truthful and fair with others, along with telling them why you value them, so that we can all feel more confident in our abilities, work on ourselves, and feel less like impostors if possible.<br><br>
+
+    </div>
+  </div>
 </body>
 </html>
